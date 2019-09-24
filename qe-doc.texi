@@ -1,5 +1,6 @@
 \input texinfo @c -*- texinfo -*-
 
+@setfilename  qe-doc.info
 @settitle QEmacs Documentation
 @titlepage
 @sp 7
@@ -7,8 +8,10 @@
 @sp 3
 @end titlepage
 
+@contents
 
 @chapter Introduction
+
 QEmacs (for Quick Emacs) is a very small but powerful
 UNIX editor. It has features that even big editors lack :
 @itemize
