@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project (qemacs VERSION 5.2)
 
-option (BUILD_ALL "Build all the targets" OFF)
+option (BUILD_ALL "Build all the targets" ON)
 
 option (ENABLE_TINY "Build a very small version" OFF)
 option (ENABLE_GPROF "Add gprof build flags" OFF)
@@ -46,6 +46,11 @@ set (SOURCES_EXTRA
 add_definitions (-DHAVE_QE_CONFIG_H)
 include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} libqhtml)
 add_subdirectory (libqhtml)
+
+if (BUILD_ALL)
+  add_subdirectory (cp)
+  add_subdirectory (jis)
+endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   SET(CMAKE_C_FLAGS
@@ -240,9 +245,6 @@ add_custom_target(kmaps
   COMMENT "Generate kmaps"
   SOURCES ${kmaps_in})
 
-add_executable (cptoqe cptoqe.c cutils.c)
-add_executable (jistoqe jistoqe.c cutils.c)
-
 find_package (PNG)
 if (PNG_FOUND)
   add_executable (fbftoqe fbftoqe.c cutils.c)
@@ -267,21 +269,9 @@ if (PNG_FOUND)
   target_link_libraries (html2png qhtml ${PNG_LIBRARIES})
 endif ()
 
-if (BUILD_ALL)
-  set (CP 8859-2.TXT   8859-3.TXT   8859-4.TXT   8859-5.TXT   8859-6.TXT
-    8859-7.TXT   8859-8.TXT   8859-9.TXT   8859-10.TXT  8859-11.TXT
-    8859-13.TXT  8859-14.TXT  8859-15.TXT  8859-16.TXT
-    CP437.TXT    CP737.TXT    CP850.TXT    CP852.TXT    CP866.TXT
-    CP1125.TXT   CP1250.TXT   CP1251.TXT   CP1252.TXT   CP1256.TXT
-    CP1257.TXT   MAC-LATIN2.TXT MAC-ROMAN.TXT
-    kamen.cp     KOI8-R.TXT   koi8_u.cp    TCVN.TXT     VISCII.TXT
-    CP037.TXT    CP424.TXT    CP500.TXT    CP875.TXT    CP1026.TXT
-    ATARIST.TXT)
-
-endif ()
 
 find_program (MAKEINFO makeinfo)
-if (TEXI2HTML)
+if (MAKEINFO)
   function (buildtexi input output)
     set(SOURCE_DOC "${PROJECT_SOURCE_DIR}/${input}")
 

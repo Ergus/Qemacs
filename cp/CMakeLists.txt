@@ -1,0 +1,21 @@
+
+set (CP 8859-2.TXT   8859-3.TXT   8859-4.TXT   8859-5.TXT   8859-6.TXT
+  8859-7.TXT   8859-8.TXT   8859-9.TXT   8859-10.TXT  8859-11.TXT
+  8859-13.TXT  8859-14.TXT  8859-15.TXT  8859-16.TXT
+  CP437.TXT    CP737.TXT    CP850.TXT    CP852.TXT    CP866.TXT
+  CP1125.TXT   CP1250.TXT   CP1251.TXT   CP1252.TXT   CP1256.TXT
+  CP1257.TXT   MAC-LATIN2.TXT MAC-ROMAN.TXT
+  kamen.cp     KOI8-R.TXT   koi8_u.cp    TCVN.TXT     VISCII.TXT
+  CP037.TXT    CP424.TXT    CP500.TXT    CP875.TXT    CP1026.TXT
+  ATARIST.TXT)
+
+add_executable (cptoqe cptoqe.c ${PROJECT_SOURCE_DIR}/cutils.c)
+
+add_custom_command(
+  OUTPUT charsetmore.c
+  COMMAND cptoqe -i cpdata.txt ${CP} > "${CMAKE_CURRENT_BINARY_DIR}/charsetmore.c"
+  DEPENDS cptoqe cpdata.txt ${CP}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generate charsetmore.c"
+  SOURCES cpdata.txt ${CP}
+  )
