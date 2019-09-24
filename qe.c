@@ -9026,19 +9026,19 @@ static void exit_all_modules(void)
 }
 #endif
 
-#else
+#else //===============================================
 
 #ifndef SPLINT
 #define qe_module_declare(fn)  extern int module_ ## fn(void)
-#include "modules.txt"
+#include "\"" MODULES "\""
 #undef qe_module_declare
 #endif
 
 static void init_all_modules(void)
 {
 #ifndef SPLINT
-#define qe_module_declare(fn)  module_ ## fn()
-#include "modules.txt"
+#define qe_module_declare(fn) module_ ## fn();
+#include "\"" MODULES "\""
 #undef qe_module_declare
 #endif
 }
