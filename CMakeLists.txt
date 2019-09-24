@@ -34,14 +34,23 @@ cmake_dependent_option (ENABLE_PLUGINS
 cmake_dependent_option (ENABLE_FFMPEG
   "Enable ffmpeg support" ON "NOT ENABLE_TINY" OFF)
 
-# End commands
+# End command lines
+
+# Generated sources
+set (CHARSETMORE "${PROJECT_BINARY_DIR}/charsetmore.c")
+set (CHARSETJIS "${PROJECT_BINARY_DIR}/charsetjis.def")
+
+set_source_files_properties (${CHARSETMORE} ${CHARSETJIS}
+  PROPERTIES GENERATED true)
+
+# Sources
 
 set (SOURCES_COMMON   # objs
   qe.c util.c cutils.c charset.c buffer.c search.c
   input.c display.c hex.c list.c)
 
 set (SOURCES_EXTRA
-  qescript.c extras.c variables.c fractal.c charsetjis.c charsetmore.c)
+  qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
 
 add_definitions (-DHAVE_QE_CONFIG_H)
 include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} libqhtml)
@@ -49,7 +58,6 @@ add_subdirectory (libqhtml)
 
 if (BUILD_ALL)
   add_subdirectory (cp)
-  add_subdirectory (jis)
 endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -73,11 +81,6 @@ set (QE_VERSION ${CMAKE_PROJECT_VERSION})
 set (CONFIG_QE_PREFIX ${CMAKE_INSTALL_PREFIX})
 set (CONFIG_QE_DATADIR "${CONFIG_QE_DATADIR}/share")
 set (CONFIG_QE_MANDIR "${CONFIG_QE_DATADIR}/man")
-
-
-if (CMAKE_SYSTEM_PROCESSOR)
-  set (WORDS_BIGENDIAN TRUE)
-endif()
 
 if (NOT ENABLE_TINY)
   set (CONFIG_ALL_KMAPS TRUE)
@@ -173,36 +176,24 @@ else ()
   endif ()
 endif ()
 
-# Parse the modules.
 function (make_modules output)
-  if (NOT EXISTS ${output})
-    set (GENERATE true)
-  else ()
-    foreach (f ${ARGN})
-      if (${f} IS_NEWER_THAN ${output})
-	set (GENERATE true)
-	break ()
-      endif ()
-    endforeach ()
-  endif ()
-
-  if (GENERATE)
-    message ("-- Generating: ${output}")
-    file (WRITE ${output} "/* This file was generated automatically */\n")
-    foreach (f ${ARGN})
-      file (STRINGS ${f} VTMP REGEX "^qe_module_init")
-      if (VTMP)
-	string(REPLACE qe_module_init qe_module_declare VTMP ${VTMP})
-	file (APPEND ${output} "${VTMP}\n")
-      endif ()
-    endforeach ()
-  endif ()
+  set (targetname ${output})
+  set (filename "${${output}}")
+  add_custom_command (
+    OUTPUT "${filename}"
+    COMMAND cmake -DOUT=${filename} -DIN=${ARGN} -P cmake-modules.cmake
+    DEPENDS ${ARGN}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generate ${filename}"
+    )
+  add_custom_target (${targetname} DEPENDS ${filename})
 endfunction ()
 
 set (MODULES "${CMAKE_CURRENT_BINARY_DIR}/modules.txt")
 set (SRC ${SOURCES_COMMON} ${SOURCES_EXTRA} ${QEND})
 make_modules (${MODULES} ${SRC})
 add_executable (qe "${SRC}")
+add_dependencies(qe CHARSET MODULES)
 target_link_libraries (qe "${TLIBS}" "${LIBS}")
 target_compile_definitions (qe PRIVATE MODULES="${MODULES}")
 
@@ -211,6 +202,7 @@ if (NOT ENABLE_TINY)
   set (TSRC ${SOURCES_COMMON} parser.c ${QEND})
   make_modules (${TMODULE} ${TSRC})
   add_executable (tqe ${TSRC})
+  add_dependencies(qe TMODULE)
   target_compile_definitions (tqe PRIVATE CONFIG_TINY)
   target_compile_definitions (tqe PRIVATE MODULES="${TMODULE}")
 endif ()
@@ -220,10 +212,10 @@ if (QE_X11)
   set (XSRC ${SOURCES_COMMON} ${SOURCES_EXTRA} x11.c ${QEND})
   make_modules (${XMODULES} ${XSRC})
   add_executable (xqe ${XSRC})
+  add_dependencies(xqe CHARSET XMODULES)
   target_compile_definitions (xqe PRIVATE CONFIG_X11)
   target_link_libraries (xqe ${TLIBS} ${LIBS} ${QE_X11})
   target_compile_definitions (xqe PRIVATE MODULES="${XMODULE}")
-
 endif ()
 
 # Extra files
@@ -262,10 +254,11 @@ if (PNG_FOUND)
 
   set (OBJS1 html2png.c util.c cutils.c
     arabic.c indic.c qfribidi.c display.c unicode_join.c
-    charset.c charsetmore.c charsetjis.c
+    charset.c ${CHARSETMORE} charsetjis.c
     libfbf.c fbfrender.c cfb.c fbffonts.c)
 
   add_executable (html2png ${OBJS1})
+  add_dependencies (html2png CHARSET)
   target_link_libraries (html2png qhtml ${PNG_LIBRARIES})
 endif ()
 

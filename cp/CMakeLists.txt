@@ -1,3 +1,4 @@
+# CHARSETMORE
 
 set (CP 8859-2.TXT   8859-3.TXT   8859-4.TXT   8859-5.TXT   8859-6.TXT
   8859-7.TXT   8859-8.TXT   8859-9.TXT   8859-10.TXT  8859-11.TXT
@@ -12,10 +13,28 @@ set (CP 8859-2.TXT   8859-3.TXT   8859-4.TXT   8859-5.TXT   8859-6.TXT
 add_executable (cptoqe cptoqe.c ${PROJECT_SOURCE_DIR}/cutils.c)
 
 add_custom_command(
-  OUTPUT charsetmore.c
-  COMMAND cptoqe -i cpdata.txt ${CP} > "${CMAKE_CURRENT_BINARY_DIR}/charsetmore.c"
+  OUTPUT ${CHARSETMORE}
+  COMMAND cptoqe -i cpdata.txt ${CP} > ${CHARSETMORE}
   DEPENDS cptoqe cpdata.txt ${CP}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT "Generate charsetmore.c"
+  COMMENT "Generate ${CHARSETMORE}"
   SOURCES cpdata.txt ${CP}
   )
+
+# CHARSETJIS
+
+set (JIS JIS0208.TXT JIS0212.TXT)
+
+add_executable (jistoqe jistoqe.c ${PROJECT_SOURCE_DIR}/cutils.c)
+
+add_custom_command(
+  OUTPUT ${CHARSETJIS}
+  COMMAND jistoqe ${JIS} > "${CHARSETJIS}"
+  DEPENDS jistoqe ${JIS}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generate ${CHARSETJIS}"
+  SOURCES ${JIS}
+  )
+
+add_custom_target(CHARSET DEPENDS ${CHARSETMORE} ${CHARSETJIS})
+
