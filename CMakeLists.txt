@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 
 project (qemacs VERSION 5.2)
 
-option (BUILD_ALL "Build all the targets" ON)
-
 option (ENABLE_TINY "Build a very small version" OFF)
 option (ENABLE_GPROF "Add gprof build flags" OFF)
 option (ENABLE-ATARI "enable atari cross compile" OFF)
@@ -36,12 +34,17 @@ cmake_dependent_option (ENABLE_FFMPEG
 
 # End command lines
 
-# Generated sources
 set (CHARSETMORE "${PROJECT_BINARY_DIR}/charsetmore.c")
 set (CHARSETJIS "${PROJECT_BINARY_DIR}/charsetjis.def")
-
 set_source_files_properties (${CHARSETMORE} ${CHARSETJIS}
   PROPERTIES GENERATED true)
+
+include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} libqhtml)
+
+add_subdirectory (libqhtml)
+add_subdirectory (cp)
+
+add_definitions (-DHAVE_QE_CONFIG_H)
 
 # Sources
 
@@ -52,13 +55,6 @@ set (SOURCES_COMMON   # objs
 set (SOURCES_EXTRA
   qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
 
-add_definitions (-DHAVE_QE_CONFIG_H)
-include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} libqhtml)
-add_subdirectory (libqhtml)
-
-if (BUILD_ALL)
-  add_subdirectory (cp)
-endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   SET(CMAKE_C_FLAGS
@@ -203,8 +199,7 @@ if (NOT ENABLE_TINY)
   make_modules (${TMODULE} ${TSRC})
   add_executable (tqe ${TSRC})
   add_dependencies(qe TMODULE)
-  target_compile_definitions (tqe PRIVATE CONFIG_TINY)
-  target_compile_definitions (tqe PRIVATE MODULES="${TMODULE}")
+  target_compile_definitions (tqe PRIVATE CONFIG_TINY MODULES="${TMODULE}")
 endif ()
 
 if (QE_X11)
@@ -213,21 +208,21 @@ if (QE_X11)
   make_modules (${XMODULES} ${XSRC})
   add_executable (xqe ${XSRC})
   add_dependencies(xqe CHARSET XMODULES)
-  target_compile_definitions (xqe PRIVATE CONFIG_X11)
+  target_compile_definitions (xqe PRIVATE CONFIG_X11 MODULES="${XMODULE}")
   target_link_libraries (xqe ${TLIBS} ${LIBS} ${QE_X11})
-  target_compile_definitions (xqe PRIVATE MODULES="${XMODULE}")
 endif ()
 
 # Extra files
-
 configure_file (config.h.in config.h)
 
 add_executable (ligtoqe ligtoqe.c cutils.c)
-add_custom_target(ligatures
-  COMMAND ligtoqe unifont.lig ligatures
+add_custom_command (
+  OUTPUT "${PROJECT_BINARY_DIR}/ligatures"
+  COMMAND ligtoqe unifont.lig "${PROJECT_BINARY_DIR}/ligatures"
   DEPENDS ligtoqe unifont.lig
-  COMMENT "Generate ligatures"
-  SOURCES unifont.lig)
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_target(lig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
 
 add_executable (kmaptoqe kmaptoqe.c cutils.c)
 file (GLOB kmaps_in kmap kmap/*.kmap)
