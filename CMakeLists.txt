@@ -21,13 +21,13 @@ cmake_dependent_option (ENABLE_XRENDER
   "Enable Xrender extension support" ON "ENABLE_X11" OFF)
 
 cmake_dependent_option (ENABLE_HTML
-  "Disable graphical html support" ON "NOT ENABLE_TINY" OFF)
+  "Disable graphical html support" ON "NOT ENABLE_TINY;NOT WIN32" OFF)
 
 cmake_dependent_option (ENABLE_PNG
   "Enable png support" ON "NOT ENABLE_TINY" OFF)
 
 cmake_dependent_option (ENABLE_PLUGINS
-  "Enable plugins support" ON "NOT ENABLE_TINY" OFF)
+  "Enable plugins support" ON "NOT ENABLE_TINY;NOT WIN32" OFF)
 
 cmake_dependent_option (ENABLE_FFMPEG
   "Enable ffmpeg support" ON "NOT ENABLE_TINY" OFF)
@@ -39,9 +39,8 @@ set (CHARSETJIS "${PROJECT_BINARY_DIR}/charsetjis.def")
 set_source_files_properties (${CHARSETMORE} ${CHARSETJIS}
   PROPERTIES GENERATED true)
 
-include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} libqhtml)
+include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 
-add_subdirectory (libqhtml)
 add_subdirectory (cp)
 
 add_definitions (-DHAVE_QE_CONFIG_H)
@@ -55,23 +54,29 @@ set (SOURCES_COMMON   # objs
 set (SOURCES_EXTRA
   qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
 
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  SET(CMAKE_C_FLAGS
+  set (CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -Wall -g -O2 -funsigned-char -Wno-format-zero-length")
-  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
+  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
 endif ()
 
 if (ENABLE_GPROF)
-  set (CONFIG_HAVE_GPROF TRUE)
+  set (CONFIG_HAVE_GPROF true)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 endif ()
 
-set (CONFIG_HAS_TYPEOF TRUE)
-set (CONFIG_PTSNAME TRUE)
+if (ENABLE_PNG)
+  find_package (PNG)
+  if (PNG_FOUND)
+    set (CONFIG_PNG_OUTPUT true)
+  endif ()
+endif ()
+
+set (CONFIG_HAS_TYPEOF true)
+set (CONFIG_PTSNAME true)
 
 set (QE_VERSION ${CMAKE_PROJECT_VERSION})
 set (CONFIG_QE_PREFIX ${CMAKE_INSTALL_PREFIX})
@@ -79,15 +84,13 @@ set (CONFIG_QE_DATADIR "${CONFIG_QE_DATADIR}/share")
 set (CONFIG_QE_MANDIR "${CONFIG_QE_DATADIR}/man")
 
 if (NOT ENABLE_TINY)
-  set (CONFIG_ALL_KMAPS TRUE)
+  set (CONFIG_ALL_KMAPS true)
   set (SOURCES_EXTRA ${SOURCES_EXTRA} kmap.c)
 
-  set (CONFIG_UNICODE_JOIN TRUE)
-  set (SOURCES_EXTRA ${SOURCES_EXTRA}
-    unicode_join.c arabic.c indic.c qfribidi.c)
+  set (CONFIG_UNICODE_JOIN true)
 
-  set (CONFIG_ALL_MODES TRUE)
   set (SOURCES_EXTRA ${SOURCES_EXTRA}
+    unicode_join.c arabic.c indic.c qfribidi.c
     unihex.c bufed.c clang.c xml.c
     htmlsrc.c forth.c arm.c lisp.c makemode.c
     markdown.c orgmode.c perl.c script.c
@@ -96,80 +99,89 @@ if (NOT ENABLE_TINY)
 endif ()
 
 if (WIN32)
-  set (CONFIG_WIN32 TRUE)
+  set (CONFIG_WIN32 true)
   set (CONFIG_INIT_CALLS false)
-  set (CONFIG_HTML false)
   set (CONFIG_DLL false)
   set (CONFIG_MMAP false)
   set (CONFIG_UNLOCKIO false)
 
   if (${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
-    set (CONFIG_CYGWIN TRUE)
+    set (CONFIG_CYGWIN true)
   else ()
     set (TLIBS ${TLIBS} ws2_32)
   endif ()
 
   set (SOURCES_COMMON ${SOURCES_COMMON} unix.c win32.c)
   set (TLIBS ${TLIBS} msvcrt gdi32 wsock32)
-
 else ()
-  set (CONFIG_INIT_CALLS TRUE)
-  set (CONFIG_NETWORK TRUE)
-  set (CONFIG_DLL TRUE)
-  set (CONFIG_MMAP TRUE)
-  set (CONFIG_UNLOCKIO TRUE)
+  set (CONFIG_INIT_CALLS true)
+  set (CONFIG_NETWORK true)
+  set (CONFIG_DLL true)
+  set (CONFIG_MMAP true)
+  set (CONFIG_UNLOCKIO true)
 
   set (SOURCES_COMMON ${SOURCES_COMMON} unix.c tty.c)
   set (TLIBS ${TLIBS} m)
 
-  if (CONFIG_ALL_MODES)
+  if (NOT ENABLE_TINY)
     set (SOURCES_EXTRA ${SOURCES_EXTRA} shell.c dired.c latex-mode.c archive.c)
   endif ()
 
   if (APPLE)
-    set (CONFIG_DARWIN TRUE)
+    set (CONFIG_DARWIN true)
     set (CONFIG_INIT_CALLS false)
     set (CONFIG_DLL false)
     set (CONFIG_UNLOCKIO false)
   elseif (CMAKE_SYSTEM_NAME EQUAL Haiku)
-    set (CONFIG_HAIKU TRUE)
-    set (CONFIG_HTML TRUE)
-    set (SOURCES_EXTRA haiku.cpp)
+    set (CONFIG_HAIKU true)
+    set (SOURCES haiku.cpp)
+    set (CONFIG_HTML true)
     set (LIBS ${LIBS} network be stdc++)
   elseif (CMAKE_SYSTEM_NAME MATCHES BSD)
     set (CONFIG_DLL false)
     set (CONFIG_PTSNAME false)
   endif ()
 
-  find_package (X11)
-  if (X11_FOUND)
-    set (QE_X11 ${X11_LIBRARIES})
+  if (ENABLE_X11)
+    find_package (X11)
+    if (X11_FOUND)
+      set (QE_X11 ${X11_LIBRARIES})
 
-    if (X11_Xv_FOUND)
-      set (CONFIG_XV ${X11_Xv_FOUND})
-      set (QE_X11 ${QE_X11} ${X11_Xv_LIB})
+      if (ENABLE_XV AND  X11_Xv_FOUND)
+	set (CONFIG_XV ${X11_Xv_FOUND})
+	set (QE_X11 ${QE_X11} ${X11_Xv_LIB})
+      endif ()
+
+      if (ENABLE_XSHM AND X11_XShm_FOUND)
+	set (CONFIG_XSHM ${X11_XShm_FOUND})
+	set (QE_X11 ${QE_X11} ${X11_Xext_LIB})
+      endif ()
+
+      if (ENABLE_XRENDER AND X11_Xrender_FOUND)
+	set (CONFIG_XRENDER ${X11_Xrender_FOUND})
+	set (QE_X11 ${QE_X11} ${X11_Xrender_LIB})
+      endif ()
+
+      if (ENABLE_HTML)
+	include_directories (libqhtml)
+	add_subdirectory (libqhtml)
+	set (SOURCES ${SOURCES} html.c docbook.c)
+	set (LIBS ${LIBS} qhtml)
+	set (CONFIG_HTML true)
+      endif ()
     endif ()
-
-    if (X11_XShm_FOUND)
-      set (CONFIG_XSHM ${X11_XShm_FOUND})
-      set (QE_X11 ${QE_X11} ${X11_Xext_LIB})
-    endif ()
-
-    if (X11_Xrender_FOUND)
-      set (CONFIG_XRENDER ${X11_Xrender_FOUND})
-      set (QE_X11 ${QE_X11} ${X11_Xrender_LIB})
-    endif ()
-
-    set (CONFIG_HTML TRUE)
   endif ()
 
   if (CONFIG_INIT_CALLS)
     set (QEND qeend.c)
   endif ()
 
-  if (CONFIG_DLL)
+  if (ENABLE_PLUGINS AND CONFIG_DLL)
     set (LIBS ${LIBS} dl)
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-E")
+    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-E")
   endif ()
+
 endif ()
 
 function (make_modules output)
@@ -198,7 +210,7 @@ if (NOT ENABLE_TINY)
   set (TSRC ${SOURCES_COMMON} parser.c ${QEND})
   make_modules (${TMODULE} ${TSRC})
   add_executable (tqe ${TSRC})
-  add_dependencies(qe TMODULE)
+  add_dependencies(tqe TMODULE)
   target_compile_definitions (tqe PRIVATE CONFIG_TINY MODULES="${TMODULE}")
 endif ()
 
@@ -213,7 +225,6 @@ if (QE_X11)
 endif ()
 
 # Extra files
-configure_file (config.h.in config.h)
 
 add_executable (ligtoqe ligtoqe.c cutils.c)
 add_custom_command (
@@ -221,7 +232,7 @@ add_custom_command (
   COMMAND ligtoqe unifont.lig "${PROJECT_BINARY_DIR}/ligatures"
   DEPENDS ligtoqe unifont.lig
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_target(lig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
+add_custom_target(makelig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
 
 add_executable (kmaptoqe kmaptoqe.c cutils.c)
 file (GLOB kmaps_in kmap/*.kmap)
@@ -231,20 +242,13 @@ add_custom_command(
   DEPENDS kmaptoqe ${kmaps_in})
 add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
 
-find_package (PNG)
-if (PNG_FOUND)
+if (CONFIG_HTML)
   add_executable (fbftoqe fbftoqe.c cutils.c)
-  file (GLOB fonts_in fonts fonts/*.fbf)
+  file (GLOB fonts_in fonts/*.fbf)
   add_custom_command(
     OUTPUT fbffonts.c
     COMMAND fbftoqe ${fonts_in} > fbffonts.c
-    DEPENDS fbftoqe ${fonts_in}
-    COMMENT "Generate fbffonts.c"
-    SOURCES ${fonts_in})
-
-  find_package (PNG)
-
-  set (CONFIG_PNG_OUTPUT TRUE)
+    DEPENDS fbftoqe ${fonts_in})
 
   set (OBJS1 html2png.c util.c cutils.c
     arabic.c indic.c qfribidi.c display.c unicode_join.c
@@ -253,10 +257,18 @@ if (PNG_FOUND)
 
   add_executable (html2png ${OBJS1})
   add_dependencies (html2png CHARSET)
-  target_link_libraries (html2png qhtml ${PNG_LIBRARIES})
+  target_link_libraries (html2png qhtml)
+
+  if (CONFIG_PNG_OUTPUT)
+    target_compile_definitions (html2png PRIVATE CONFIG_PNG_OUTPUT=1)
+    target_link_libraries (html2png ${PNG_LIBRARIES})
+  endif ()
 endif ()
 
+# Generate config.h
+configure_file (config.h.in config.h)
 
+# Documentation
 find_program (MAKEINFO makeinfo)
 if (MAKEINFO)
   function (buildtexi input output)

@@ -14,7 +14,6 @@
 #cmakedefine CONFIG_PTSNAME 1
 #cmakedefine CONFIG_ALL_KMAPS 1
 #cmakedefine CONFIG_UNICODE_JOIN 1
-#cmakedefine CONFIG_ALL_MODES 1
 #cmakedefine CONFIG_WIN32 1
 #cmakedefine CONFIG_INIT_CALLS 1
 #cmakedefine CONFIG_HTML 1
