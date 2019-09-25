@@ -221,16 +221,15 @@ add_custom_command (
   COMMAND ligtoqe unifont.lig "${PROJECT_BINARY_DIR}/ligatures"
   DEPENDS ligtoqe unifont.lig
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
 add_custom_target(lig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
 
 add_executable (kmaptoqe kmaptoqe.c cutils.c)
-file (GLOB kmaps_in kmap kmap/*.kmap)
-add_custom_target(kmaps
-  COMMAND kmaptoqe kmaps ${kmaps_in}
-  DEPENDS kmaptoqe ${kmaps_in}
-  COMMENT "Generate kmaps"
-  SOURCES ${kmaps_in})
+file (GLOB kmaps_in kmap/*.kmap)
+add_custom_command(
+  OUTPUT "${PROJECT_BINARY_DIR}/kmaps"
+  COMMAND kmaptoqe "${PROJECT_BINARY_DIR}/kmaps" ${kmaps_in}
+  DEPENDS kmaptoqe ${kmaps_in})
+add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
 
 find_package (PNG)
 if (PNG_FOUND)
