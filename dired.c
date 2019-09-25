@@ -438,7 +438,7 @@ static int get_trailchar(mode_t mode)
 static char *getentryslink(char *path, int size,
                            const char *dir, const char *name)
 {
-    char filename[MAX_FILENAME_SIZE];
+    char filename[2 * MAX_FILENAME_SIZE];
     int len;
 
     snprintf(filename, sizeof(filename), "%s/%s", dir, name);

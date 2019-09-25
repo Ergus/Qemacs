@@ -1029,7 +1029,8 @@ int eb_create_style_buffer(EditBuffer *b, int flags)
         /* XXX: should extend style width if needed */
         return 0;
     } else {
-        char name[MAX_BUFFERNAME_SIZE];
+        /* The 8 is to not silent gcc warnings */
+        char name[MAX_BUFFERNAME_SIZE + 8];
         snprintf(name, sizeof(name), "*S<%s>", b->name);
         b->b_styles = eb_new(name, BF_SYSTEM | BF_IS_STYLE | BF_RAW);
         b->flags |= flags & BF_STYLES;
@@ -1140,7 +1141,8 @@ static void eb_addlog(EditBuffer *b, enum LogOperation op,
         return;
 
     if (!b->log_buffer) {
-        char buf[MAX_BUFFERNAME_SIZE];
+	/* The 8 is to silent gcc warnings but it actually is a potential bug  */
+	char buf[MAX_BUFFERNAME_SIZE + 8];
         /* Name should be unique because b->name is, but b->name may
          * later change if buffer is written to a different file.  This
          * should not be a problem since this log buffer is never

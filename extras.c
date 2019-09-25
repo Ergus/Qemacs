@@ -214,7 +214,7 @@ void do_compare_windows(EditState *s, int argval)
 
 void do_compare_files(EditState *s, const char *filename, int bflags)
 {
-    char buf[MAX_FILENAME_SIZE];
+    char buf[MAX_FILENAME_SIZE + 8];
     char dir[MAX_FILENAME_SIZE];
     int pathlen, parent_pathlen;
     const char *tail;
@@ -1834,7 +1834,7 @@ static void do_goto_tag(EditState *s) {
 /* XXX: should have next-tag and previous-tag */
 
 static void do_list_tags(EditState *s) {
-    char buf[256];
+    char buf[MAX_FILENAME_SIZE + 16];
     EditBuffer *b;
     QEProperty *p;
     EditState *e1;
@@ -1845,7 +1845,7 @@ static void do_list_tags(EditState *s) {
 
     tag_buffer(s);
 
-    snprintf(buf, sizeof buf, "Tags in file %s", s->b->filename);
+    snprintf(buf, sizeof(buf), "Tags in file %s", s->b->filename);
     for (p = s->b->property_list; p; p = p->next) {
         if (p->type == QE_PROP_TAG) {
             //eb_printf(b, "%12d  %s\n", p->offset, (char*)p->data);
