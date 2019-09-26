@@ -4371,8 +4371,9 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     /* line numbers */
     if (ds->line_numbers) {
         ds->style = QE_STYLE_GUTTER;
-        display_printf(ds, -1, -1, "%6d  ", line_num + 1);
+        display_printf(ds, -1, -1, "%6d ", line_num + 1);
         ds->style = 0;
+	display_char(ds, -1, -1, ' ');
     }
 
     /* prompt display, only on first line */
