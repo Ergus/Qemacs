@@ -3035,7 +3035,7 @@ static ModeDef vala_mode = {
 static const char pawn_keywords[] = {
     "assert|break|case|const|continue|default|defined|do|else|exit|"
     "for|forward|goto|if|native|new|operator|public|return|sizeof|sleep|"
-    "state|static|stock|switch|tagof|while|",
+    "state|static|stock|switch|tagof|while|"
 };
 
 //static const char pawn_preprocessor_keywords[] = {
@@ -3103,7 +3103,7 @@ static ModeDef pawn_mode = {
  */
 
 static const char cminus_keywords[] = {
-    "if|else|return|while|",
+    "if|else|return|while|"
 };
 
 static const char cminus_types[] = {
@@ -3147,7 +3147,7 @@ static const char gmscript_keywords[] = {
     "if|else|for|while|foreach|in|and|or|function|"
     "dowhile|break|continue|return|"
     "array|table|global|local|member|this|"
-    "true|false|null|",
+    "true|false|null|"
 };
 
 static const char gmscript_types[] = {
