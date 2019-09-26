@@ -2531,6 +2531,11 @@ void do_toggle_line_numbers(EditState *s)
     s->line_numbers = !s->line_numbers;
 }
 
+void do_toggle_fill_column_indicator(EditState *s)
+{
+    s->fill_column_indicator = !s->fill_column_indicator;
+}
+
 void do_toggle_truncate_lines(EditState *s)
 {
     if (s->wrap == WRAP_TERM)
@@ -3267,8 +3272,8 @@ void display_close(DisplayState *ds)
 
 void display_init(DisplayState *ds, EditState *e, enum DisplayType do_disp,
                   int (*cursor_func)(DisplayState *ds,
-                                     int offset1, int offset2, int line_num,
-                                     int x, int y, int w, int h, int hex_mode),
+		                     int offset1, int offset2, int line_num,
+		                     int x, int y, int w, int h, int hex_mode),
                   void *cursor_opaque)
 {
     QEFont *font;
@@ -3303,6 +3308,12 @@ void display_init(DisplayState *ds, EditState *e, enum DisplayType do_disp,
     ds->line_numbers = e->line_numbers * ds->space_width * 8;
     if (ds->line_numbers > e->width / 2)
         ds->line_numbers = 0;
+
+    ds->fill_column = e->fill_column_indicator *
+        (ds->line_numbers + e->b->fill_column * ds->space_width);
+    if (ds->fill_column > e->width)
+        ds->fill_column = 0;
+
     if (ds->wrap == WRAP_TERM) {
         ds->eol_width = 0;
         ds->width = ds->line_numbers +
@@ -3381,13 +3392,12 @@ static void flush_line(DisplayState *ds,
 {
     EditState *e = ds->edit_state;
     QEditScreen *screen = e->screen;
-    int level, pos, p, i, x, x1, y, baseline, line_height, max_descent;
+    int level, pos, p, i, x, x1, y = 0, baseline = 0, line_height,
+        max_descent = 0;
     TextFragment *frag;
     QEFont *font;
 
     /* compute baseline and lineheight (incorrect for very long lines) */
-    baseline = 0;
-    max_descent = 0;
     for (i = 0; i < nb_fragments; i++) {
         frag = &fragments[i];
         if (frag->ascent > baseline)
@@ -3460,9 +3470,10 @@ static void flush_line(DisplayState *ds,
                 }
             }
         }
+
         if (!no_display) {
             /* display */
-            get_style(e, &default_style, QE_STYLE_DEFAULT);
+	    get_style(e, &default_style, QE_STYLE_DEFAULT);
             x = ds->x_start;
             y = ds->y;
 
@@ -3483,6 +3494,7 @@ static void flush_line(DisplayState *ds,
                                frag->width, line_height, styledef.bg_color);
                 x += frag->width;
             }
+
             if (x < x1 && last != -1) {
                 /* XXX: color may be inappropriate for terminal mode */
                 fill_rectangle(screen, e->xleft + x, e->ytop + y,
@@ -3528,10 +3540,25 @@ static void flush_line(DisplayState *ds,
                                    default_style.font_style,
                                    default_style.font_size);
                 draw_text(screen, font, e->xleft + x, e->ytop + y,
-                          markbuf, 1, default_style.fg_color);
+		          markbuf, 1, default_style.fg_color);
                 release_font(screen, font);
             }
-        }
+	}
+	/* Fill column indicator  */
+	if (ds->x < ds->fill_column) {
+		get_style(e, &styledef, QE_STYLE_GUTTER);
+		font = select_font(screen,
+		                   styledef.font_style,
+		                   styledef.font_size);
+
+		unsigned int markbuf = '|';
+		draw_text(screen, font,
+		          e->xleft + ds->fill_column,
+		          e->ytop + ds->y + font->ascent,
+		          &markbuf, 1, styledef.fg_color);
+
+		release_font(screen, font);
+	}
     }
 
     /* call cursor callback */

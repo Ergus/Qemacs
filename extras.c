@@ -1494,6 +1494,7 @@ static void do_describe_window(EditState *s, int argval)
               s->wrap == WRAP_TERM ? "TERM" :
               s->wrap == WRAP_WORD ? "WORD" : "???");
     eb_printf(b1, "%*s: %d\n", w, "line_numbers", s->line_numbers);
+    eb_printf(b1, "%*s: %d\n", w, "fill_column", s->fill_column_indicator);
     eb_printf(b1, "%*s: %d\n", w, "indent_size", s->indent_size);
     eb_printf(b1, "%*s: %d\n", w, "indent_tabs_mode", s->indent_tabs_mode);
     eb_printf(b1, "%*s: %d\n", w, "interactive", s->interactive);

@@ -1405,6 +1405,7 @@ struct EditState {
     enum WrapType wrap;
     int wrap_cols;   /* number of columns in terminal emulator */
     int line_numbers;
+    int fill_column_indicator; /* Boolean to fill column or not */
     /* XXX: these should be buffer specific rather than window specific */
     int indent_size;
     int indent_tabs_mode; /* if true, use tabs to indent */
@@ -1876,6 +1877,7 @@ struct DisplayState {
     int cur_hex_mode;   /* true if current char is in hex mode */
     int hex_mode;       /* hex mode from edit_state, -1 if all chars wanted */
     int line_numbers;   /* display line numbers if enough space */
+    int fill_column;    /* display fill column number */
     void *cursor_opaque;
     int (*cursor_func)(struct DisplayState *,
                        int offset1, int offset2, int line_num,
@@ -2226,6 +2228,7 @@ void do_convert_buffer_file_coding_system(EditState *s,
     const char *charset_str);
 void do_toggle_bidir(EditState *s);
 void do_toggle_line_numbers(EditState *s);
+void do_toggle_fill_column_indicator(EditState *s);
 void do_toggle_truncate_lines(EditState *s);
 void do_word_wrap(EditState *s);
 void do_count_lines(EditState *s);

@@ -360,6 +360,8 @@ static CmdDef basic_commands[] = {
     /* non standard mappings */
     CMD0( KEY_CTRLXRET('l'), KEY_CTRLC('l'),
           "toggle-line-numbers", do_toggle_line_numbers)
+    CMD0( KEY_CTRLXRET('n'), KEY_CTRLC('n'),
+          "toggle-fill-column", do_toggle_fill_column_indicator)
     CMD0( KEY_CTRLXRET('t'), KEY_CTRLC('t'),
           "toggle-truncate-lines", do_toggle_truncate_lines)
     CMD0( KEY_CTRLXRET('w'), KEY_CTRLC('w'),
