@@ -13,6 +13,8 @@ include (CMakeDependentOption)
 
 cmake_dependent_option(ENABLE_X11
   "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
+cmake_dependent_option(ENABLE_DOC
+  "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
 cmake_dependent_option (ENABLE_XV
   "Enable Xvideo extension support" ON "ENABLE_X11" OFF)
 cmake_dependent_option (ENABLE_XSHM
@@ -78,7 +80,7 @@ endif ()
 set (CONFIG_HAS_TYPEOF true)
 set (CONFIG_PTSNAME true)
 
-set (QE_VERSION ${CMAKE_PROJECT_VERSION})
+set (QE_VERSION ${PROJECT_VERSION})
 set (CONFIG_QE_PREFIX ${CMAKE_INSTALL_PREFIX})
 set (CONFIG_QE_DATADIR "${CONFIG_QE_DATADIR}/share")
 set (CONFIG_QE_MANDIR "${CONFIG_QE_DATADIR}/man")
@@ -269,6 +271,7 @@ endif ()
 configure_file (config.h.in config.h)
 
 # Documentation
+if (ENABLE_DOC)
 find_program (MAKEINFO makeinfo)
 if (MAKEINFO)
   function (buildtexi input output)
@@ -285,4 +288,4 @@ if (MAKEINFO)
 else ()
   message ("makeinfo program not available")
 endif ()
-
+endif ()
