@@ -106,6 +106,7 @@ enum InputState {
     IS_CSI,
     IS_CSI2,
     IS_ESC2,
+    IS_MOUSE,
 };
 
 enum TermCode {
@@ -126,6 +127,7 @@ typedef struct TTYState {
     int cursor_x, cursor_y;
     /* input handling */
     enum InputState input_state;
+    QEButtonEvent mouse;
     int input_param, input_param2;
     int utf8_index;
     unsigned char buf[8];
@@ -308,6 +310,7 @@ static int tty_dpy_init(QEditScreen *s,
                 "\033[?7h"          /* enter_am_mode */
                 "\033[39;49m"       /* orig_pair */
                 "\033[?1h\033="     /* keypad_xmit */
+                "\033[?1000h"       /* report mouse events */
                );
 #endif
 
@@ -392,6 +395,7 @@ static void tty_dpy_close(QEditScreen *s)
                 "\033[?1l\033>"     /* keypad_local */
                 "\033[?25h"         /* show cursor */
                 "\r\033[m\033[K"    /* return erase eol */
+                "\033[?1000l"       /* report mouse events */
                );
 #endif
     fflush(s->STDOUT);
@@ -636,6 +640,12 @@ static void tty_read_handler(void *opaque)
             ts->input_param = 0;
             ts->input_state = IS_CSI;
             break;
+	case 'M':
+            ts->input_state = IS_MOUSE; /* When there is a mouse */
+	    ts->mouse.type = QE_KEY_EVENT; /* Initialize to zero */
+	    ts->mouse.x = -1;
+	    ts->mouse.y = -1;
+	    break;
         case '[':
             ts->input_state = IS_CSI2;
             break;
@@ -644,8 +654,8 @@ static void tty_read_handler(void *opaque)
                 ch = csi_lookup[ts->input_param];
                 goto the_end;
             }
-            break;
             /* All these for ansi|cygwin */
+            break;
         default:
             if (ts->input_param == 5) {
                 /* xterm CTRL-arrows */
@@ -661,8 +671,7 @@ static void tty_read_handler(void *opaque)
                 case 'C': ch = KEY_CTRL_RIGHT; goto the_end;
                 case 'D': ch = KEY_CTRL_LEFT;  goto the_end;
                 }
-            } else
-            if (ts->input_param == 2) {
+            } else if (ts->input_param == 2) {
                 /* iterm2 SHIFT-arrows:
                  * S-left  = ^[[1;2D
                  * S-right = ^[[1;2C
@@ -684,7 +693,6 @@ static void tty_read_handler(void *opaque)
                 //case 'G': ch = KEY_CENTER;  goto the_end; // kb2
                 case 'H': ch = KEY_HOME;      goto the_end; // khome
                 case 'L': ch = KEY_INSERT;    goto the_end; // kich1
-                //case 'M': ch = KEY_MOUSE;   goto the_end; // kmous
                 case 'Z': ch = KEY_SHIFT_TAB; goto the_end; // kcbt
                 }
             }
@@ -724,6 +732,28 @@ static void tty_read_handler(void *opaque)
         case 'x': ch = KEY_F10;        goto the_end;
         }
         break;
+    case IS_MOUSE:
+        if (ts->mouse.type == QE_KEY_EVENT) {
+	    const int but_or_release = ch & 3;
+	    if (but_or_release == 3)
+                ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
+	    else {
+		ts->mouse.button = (1 << but_or_release);
+		ts->mouse.type = QE_BUTTON_PRESS_EVENT;
+	    }
+        } else {
+            const int pos = ch - 33;
+	    if (ts->mouse.x < 0) {
+                ts->mouse.x = pos;
+	    } else if (ts->mouse.y < 0) {
+                ts->mouse.y = pos;
+
+		ts->input_state = IS_NORM;
+		ev->button_event = ts->mouse;
+		qe_handle_event(ev);
+	    }
+	}
+	break;
     the_end:
         ev->key_event.type = QE_KEY_EVENT;
         ev->key_event.key = ch;

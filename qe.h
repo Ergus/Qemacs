@@ -899,6 +899,7 @@ enum QEEventType {
 #define KEY_END         KEY_ESC1(4)     // kend
 #define KEY_PAGEUP      KEY_ESC1(5)     // kpp
 #define KEY_PAGEDOWN    KEY_ESC1(6)     // knp
+#define KEY_MOUSE       KEY_ESC1(7)     // mouse; this can be anything
 #define KEY_F1          KEY_ESC1(11)
 #define KEY_F2          KEY_ESC1(12)
 #define KEY_F3          KEY_ESC1(13)
