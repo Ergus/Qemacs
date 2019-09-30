@@ -158,7 +158,8 @@ else ()
   elseif (CMAKE_SYSTEM_NAME STREQUAL Haiku)
     set (CONFIG_HAIKU true)
     set (SOURCES haiku.cpp)
-    set (CONFIG_HTML true)
+    set (CONFIG_HTML ${ENABLE_HTML})
+    set (ENABLE_X11 false)
     set (LIBS ${LIBS} network be stdc++)
   elseif (CMAKE_SYSTEM_NAME MATCHES BSD)
     set (CONFIG_DLL false)
@@ -168,8 +169,10 @@ else ()
   if (ENABLE_X11)
     find_package (X11)
     if (X11_FOUND)
+      set (CONFIG_HTML ${ENABLE_HTML})
       set (QE_X11 ${X11_LIBRARIES})
       set (QE_DEFINITION "CONFIG_X11")
+
 
       if (ENABLE_XV AND  X11_Xv_FOUND)
 	set (CONFIG_XV ${X11_Xv_FOUND})
@@ -186,13 +189,6 @@ else ()
 	set (QE_X11 ${QE_X11} ${X11_Xrender_LIB})
       endif ()
 
-      if (ENABLE_HTML)
-	include_directories (libqhtml)
-	add_subdirectory (libqhtml)
-	set (SOURCES ${SOURCES} html.c docbook.c)
-	set (LIBS ${LIBS} qhtml)
-	set (CONFIG_HTML true)
-      endif ()
     endif ()
     set (SOURCES ${SOURCES} x11.c)
     set (LIBS ${LIBS} ${QE_X11})
@@ -208,6 +204,36 @@ else ()
     set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-E")
   endif ()
 
+endif ()
+
+if (CONFIG_HTML)
+  include_directories (libqhtml)
+  add_subdirectory (libqhtml)
+  set (SOURCES ${SOURCES} html.c docbook.c)
+  set (LIBS ${LIBS} qhtml)
+  set (CONFIG_HTML true)
+
+  add_executable (fbftoqe fbftoqe.c cutils.c)
+  file (GLOB fonts_in fonts/*.fbf)
+  add_custom_command(
+    OUTPUT fbffonts.c
+    COMMAND fbftoqe ${fonts_in} > fbffonts.c
+    DEPENDS fbftoqe ${fonts_in})
+
+  set (OBJS1 html2png.c util.c cutils.c
+    arabic.c indic.c qfribidi.c display.c unicode_join.c
+    charset.c ${CHARSETMORE} charsetjis.c
+    libfbf.c fbfrender.c cfb.c fbffonts.c)
+
+  add_executable (html2png ${OBJS1})
+  add_dependencies (html2png CHARSET)
+  target_link_libraries (html2png qhtml)
+  install(TARGETS html2png DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+  if (CONFIG_PNG_OUTPUT)
+    target_compile_definitions (html2png PRIVATE CONFIG_PNG_OUTPUT=1)
+    target_link_libraries (html2png ${PNG_LIBRARIES})
+  endif ()
 endif ()
 
 function (make_modules output)
@@ -252,30 +278,6 @@ add_custom_command(
   DEPENDS kmaptoqe ${kmaps_in})
 add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
 install (FILES "${PROJECT_BINARY_DIR}/kmaps" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
-
-if (CONFIG_HTML)
-  add_executable (fbftoqe fbftoqe.c cutils.c)
-  file (GLOB fonts_in fonts/*.fbf)
-  add_custom_command(
-    OUTPUT fbffonts.c
-    COMMAND fbftoqe ${fonts_in} > fbffonts.c
-    DEPENDS fbftoqe ${fonts_in})
-
-  set (OBJS1 html2png.c util.c cutils.c
-    arabic.c indic.c qfribidi.c display.c unicode_join.c
-    charset.c ${CHARSETMORE} charsetjis.c
-    libfbf.c fbfrender.c cfb.c fbffonts.c)
-
-  add_executable (html2png ${OBJS1})
-  add_dependencies (html2png CHARSET)
-  target_link_libraries (html2png qhtml)
-  install(TARGETS html2png DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-  if (CONFIG_PNG_OUTPUT)
-    target_compile_definitions (html2png PRIVATE CONFIG_PNG_OUTPUT=1)
-    target_link_libraries (html2png ${PNG_LIBRARIES})
-  endif ()
-endif ()
 
 # Generate config.h
 configure_file (config.h.in config.h)
