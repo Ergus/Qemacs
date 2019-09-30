@@ -56,9 +56,11 @@ set (SOURCES_COMMON   # objs
 set (SOURCES_EXTRA
   qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set (CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -Wall -g -O2 -funsigned-char -Wno-format-zero-length")
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  set (CMAKE_C_FLAGS_RELEASE
+    "${CMAKE_C_FLAGS_RELEASE} -Wall -O2 -funsigned-char -Wno-format-zero-length")
+    set (CMAKE_C_FLAGS_DEBUG
+    "${CMAKE_C_FLAGS_DEBUG} -Wall -g -O0 -funsigned-char -Wno-format-zero-length")
   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
 endif ()
