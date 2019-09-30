@@ -10,6 +10,7 @@ option (ENABLE-WIN32 "enable win32 cross compile" OFF)
 option (ENABLE-CYGWIN "compile for cygwin systems" OFF)
 
 include (CMakeDependentOption)
+include (GNUInstallDirs)
 
 cmake_dependent_option(ENABLE_X11
   "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
@@ -41,6 +42,14 @@ set (CHARSETJIS "${PROJECT_BINARY_DIR}/charsetjis.def")
 set_source_files_properties (${CHARSETMORE} ${CHARSETJIS}
   PROPERTIES GENERATED true)
 
+set (CONFIG_HAS_TYPEOF true)
+set (CONFIG_PTSNAME true)
+
+set (QE_VERSION ${CMAKE_PROJECT_VERSION})
+set (CONFIG_QE_PREFIX ${CMAKE_INSTALL_PREFIX})
+set (CONFIG_QE_DATADIR "${CMAKE_INSTALL_FULL_DATADIR}")
+set (CONFIG_QE_MANDIR "${CMAKE_INSTALL_FULL_MANDIR}")
+
 include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 
 add_subdirectory (cp)
@@ -49,12 +58,30 @@ add_definitions (-DHAVE_QE_CONFIG_H)
 
 # Sources
 
-set (SOURCES_COMMON   # objs
+set (SOURCES   # objs
   qe.c util.c cutils.c charset.c buffer.c search.c
   input.c display.c hex.c list.c)
 
-set (SOURCES_EXTRA
-  qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
+if (ENABLE_TINY)
+  set (QE_DEFINITION "CONFIG_TINY")
+  set (SOURCES ${SOURCES} parser.c)
+else ()
+  set (SOURCES ${SOURCES}
+    qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
+
+  set (CONFIG_ALL_KMAPS true)
+  set (SOURCES ${SOURCES} kmap.c)
+
+  set (CONFIG_UNICODE_JOIN true)
+  set (SOURCES ${SOURCES} unicode_join.c arabic.c indic.c qfribidi.c)
+
+  set (SOURCES ${SOURCES}
+    unihex.c bufed.c clang.c xml.c
+    htmlsrc.c forth.c arm.c lisp.c makemode.c
+    markdown.c orgmode.c perl.c script.c
+    ebnf.c cobol.c rlang.c txl.c nim.c rebol.c elm.c jai.c ats.c
+    ${EXTRA_MODES} extra-modes.c)
+endif ()
 
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
   set (CMAKE_C_FLAGS_RELEASE
@@ -79,29 +106,6 @@ if (ENABLE_PNG)
   endif ()
 endif ()
 
-set (CONFIG_HAS_TYPEOF true)
-set (CONFIG_PTSNAME true)
-
-set (QE_VERSION ${PROJECT_VERSION})
-set (CONFIG_QE_PREFIX ${CMAKE_INSTALL_PREFIX})
-set (CONFIG_QE_DATADIR "${CONFIG_QE_DATADIR}/share")
-set (CONFIG_QE_MANDIR "${CONFIG_QE_DATADIR}/man")
-
-if (NOT ENABLE_TINY)
-  set (CONFIG_ALL_KMAPS true)
-  set (SOURCES_EXTRA ${SOURCES_EXTRA} kmap.c)
-
-  set (CONFIG_UNICODE_JOIN true)
-
-  set (SOURCES_EXTRA ${SOURCES_EXTRA}
-    unicode_join.c arabic.c indic.c qfribidi.c
-    unihex.c bufed.c clang.c xml.c
-    htmlsrc.c forth.c arm.c lisp.c makemode.c
-    markdown.c orgmode.c perl.c script.c
-    ebnf.c cobol.c rlang.c
-    txl.c nim.c rebol.c elm.c jai.c ats.c ${EXTRA_MODES} extra-modes.c)
-endif ()
-
 if (WIN32)
   set (CONFIG_WIN32 true)
   set (CONFIG_INIT_CALLS false)
@@ -112,11 +116,11 @@ if (WIN32)
   if (${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
     set (CONFIG_CYGWIN true)
   else ()
-    set (TLIBS ${TLIBS} ws2_32)
+    set (LIBS ${LIBS} ws2_32)
   endif ()
 
-  set (SOURCES_COMMON ${SOURCES_COMMON} unix.c win32.c)
-  set (TLIBS ${TLIBS} msvcrt gdi32 wsock32)
+  set (SOURCES ${SOURCES} unix.c win32.c)
+  set (LIBS ${LIBS} msvcrt gdi32 wsock32)
 else ()
   set (CONFIG_INIT_CALLS true)
   set (CONFIG_NETWORK true)
@@ -124,11 +128,11 @@ else ()
   set (CONFIG_MMAP true)
   set (CONFIG_UNLOCKIO true)
 
-  set (SOURCES_COMMON ${SOURCES_COMMON} unix.c tty.c)
-  set (TLIBS ${TLIBS} m)
+  set (SOURCES ${SOURCES} unix.c tty.c)
+  set (LIBS ${LIBS} m)
 
   if (NOT ENABLE_TINY)
-    set (SOURCES_EXTRA ${SOURCES_EXTRA} shell.c dired.c latex-mode.c archive.c)
+    set (SOURCES ${SOURCES} shell.c dired.c latex-mode.c archive.c)
   endif ()
 
   if (APPLE)
@@ -150,6 +154,7 @@ else ()
     find_package (X11)
     if (X11_FOUND)
       set (QE_X11 ${X11_LIBRARIES})
+      set (QE_DEFINITION "CONFIG_X11")
 
       if (ENABLE_XV AND  X11_Xv_FOUND)
 	set (CONFIG_XV ${X11_Xv_FOUND})
@@ -174,6 +179,8 @@ else ()
 	set (CONFIG_HTML true)
       endif ()
     endif ()
+    set (SOURCES ${SOURCES} x11.c)
+    set (LIBS ${LIBS} ${QE_X11})
   endif ()
 
   if (CONFIG_INIT_CALLS)
@@ -193,40 +200,23 @@ function (make_modules output)
   set (filename "${${output}}")
   add_custom_command (
     OUTPUT "${filename}"
-    COMMAND cmake -DOUT=${filename} -DIN=${ARGN} -P cmake-modules.cmake
+    COMMAND cmake -DOUT="${filename}" -DIN="${ARGN}" -P cmake-modules.cmake
     DEPENDS ${ARGN}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generate ${filename}"
     )
   add_custom_target (${targetname} DEPENDS ${filename})
+  add_dependencies(${targetname} CHARSET)
 endfunction ()
 
 set (MODULES "${CMAKE_CURRENT_BINARY_DIR}/modules.txt")
-set (SRC ${SOURCES_COMMON} ${SOURCES_EXTRA} ${QEND})
-make_modules (${MODULES} ${SRC})
-add_executable (qe "${SRC}")
-add_dependencies(qe CHARSET MODULES)
-target_link_libraries (qe "${TLIBS}" "${LIBS}")
-target_compile_definitions (qe PRIVATE MODULES="${MODULES}")
-
-if (NOT ENABLE_TINY)
-  set (TMODULE "${CMAKE_CURRENT_BINARY_DIR}/tmodules.txt")
-  set (TSRC ${SOURCES_COMMON} parser.c ${QEND})
-  make_modules (${TMODULE} ${TSRC})
-  add_executable (tqe ${TSRC})
-  add_dependencies(tqe TMODULE)
-  target_compile_definitions (tqe PRIVATE CONFIG_TINY MODULES="${TMODULE}")
-endif ()
-
-if (QE_X11)
-  set (XMODULES "${CMAKE_CURRENT_BINARY_DIR}/xmodules.txt")
-  set (XSRC ${SOURCES_COMMON} ${SOURCES_EXTRA} x11.c ${QEND})
-  make_modules (${XMODULES} ${XSRC})
-  add_executable (xqe ${XSRC})
-  add_dependencies(xqe CHARSET XMODULES)
-  target_compile_definitions (xqe PRIVATE CONFIG_X11 MODULES="${XMODULE}")
-  target_link_libraries (xqe ${TLIBS} ${LIBS} ${QE_X11})
-endif ()
+make_modules (MODULES ${SOURCES})
+add_executable (qemacs "${SOURCES}" ${QEND})
+add_dependencies(qemacs CHARSET MODULES)
+target_link_libraries (qemacs ${LIBS})
+target_compile_definitions (qemacs
+  PRIVATE ${QE_DEFINITION} MODULES="${MODULES}")
+install(TARGETS qemacs DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Extra files
 
@@ -237,6 +227,7 @@ add_custom_command (
   DEPENDS ligtoqe unifont.lig
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_target(makelig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
+install (FILES "${PROJECT_BINARY_DIR}/ligatures" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
 
 add_executable (kmaptoqe kmaptoqe.c cutils.c)
 file (GLOB kmaps_in kmap/*.kmap)
@@ -245,6 +236,7 @@ add_custom_command(
   COMMAND kmaptoqe "${PROJECT_BINARY_DIR}/kmaps" ${kmaps_in}
   DEPENDS kmaptoqe ${kmaps_in})
 add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
+install (FILES "${PROJECT_BINARY_DIR}/kmaps" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
 
 if (CONFIG_HTML)
   add_executable (fbftoqe fbftoqe.c cutils.c)
@@ -262,6 +254,7 @@ if (CONFIG_HTML)
   add_executable (html2png ${OBJS1})
   add_dependencies (html2png CHARSET)
   target_link_libraries (html2png qhtml)
+  install(TARGETS html2png DESTINATION ${CMAKE_INSTALL_BINDIR})
 
   if (CONFIG_PNG_OUTPUT)
     target_compile_definitions (html2png PRIVATE CONFIG_PNG_OUTPUT=1)
@@ -273,21 +266,25 @@ endif ()
 configure_file (config.h.in config.h)
 
 # Documentation
+
+install (FILES qe.1 DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
+install (FILES config.eg DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
+
 if (ENABLE_DOC)
-find_program (MAKEINFO makeinfo)
-if (MAKEINFO)
-  function (buildtexi input output)
-    set(SOURCE_DOC "${PROJECT_SOURCE_DIR}/${input}")
+  find_program (MAKEINFO makeinfo)
+  if (MAKEINFO)
+    function (buildtexi input output)
+      set(SOURCE_DOC "${PROJECT_SOURCE_DIR}/${input}")
 
-    add_custom_command(OUTPUT ${output}
-      COMMAND ${MAKEINFO} --html --no-split ${SOURCE_DOC}
-      MAIN_DEPENDENCY ${SOURCE_DOC})
+      add_custom_command(OUTPUT ${output}
+	COMMAND ${MAKEINFO} --html --no-split ${SOURCE_DOC}
+	MAIN_DEPENDENCY ${SOURCE_DOC})
 
-    add_custom_target("${output}_doc" ALL DEPENDS ${output})
-  endfunction ()
+      add_custom_target("${output}_doc" ALL DEPENDS ${output})
+    endfunction ()
 
-  buildtexi (qe-doc.texi qe-doc.html)
-else ()
-  message ("makeinfo program not available")
-endif ()
+    buildtexi (qe-doc.texi qe-doc.html)
+  else ()
+    message ("makeinfo program not available")
+  endif ()
 endif ()

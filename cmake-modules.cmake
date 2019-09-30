@@ -2,10 +2,11 @@
 
 # Parse the modules.
 function (generate_modules output)
+  string(REPLACE " " ";" INPUT_LIST ${ARGN})
   message ("-- Generating: ${output}")
-  message ("-- For: ${ARGN}")
+  message ("-- For: ${INPUT_LIST}")
   file (WRITE ${output} "/* This file was generated automatically */\n")
-  foreach (f ${ARGN})
+  foreach (f ${INPUT_LIST})
     file (STRINGS ${f} VTMP REGEX "^qe_module_init")
     if (VTMP)
       string(REPLACE qe_module_init qe_module_declare VTMP ${VTMP})
@@ -14,4 +15,4 @@ function (generate_modules output)
   endforeach ()
 endfunction ()
 
-generate_modules (${OUT} ${IN})
+generate_modules (${OUT} "${IN}")
