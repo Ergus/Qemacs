@@ -2523,17 +2523,29 @@ void do_convert_buffer_file_coding_system(EditState *s,
 
 void do_toggle_bidir(EditState *s)
 {
-    s->bidir = !s->bidir;
+    s->bools.get.bidir = !s->bools.get.bidir;
 }
 
 void do_toggle_line_numbers(EditState *s)
 {
-    s->line_numbers = !s->line_numbers;
+    s->bools.get.line_numbers = !s->bools.get.line_numbers;
 }
+
+void do_toggle_hl_line_number(EditState *s)
+{
+    s->bools.get.hl_current_line_number =
+	    (s->bools.get.line_numbers && !s->bools.get.hl_current_line_number);
+}
+
+void do_toggle_hl_current_line(EditState *s)
+{
+    s->bools.get.hl_current_line = !s->bools.get.hl_current_line;
+}
+
 
 void do_toggle_fill_column_indicator(EditState *s)
 {
-    s->fill_column_indicator = !s->fill_column_indicator;
+    s->bools.get.fill_column_indicator = !s->bools.get.fill_column_indicator;
 }
 
 void do_toggle_truncate_lines(EditState *s)
@@ -2852,7 +2864,7 @@ void text_mode_line(EditState *s, buf_t *out)
         buf_puts(out, "-dos");
     if (s->b->eol_type == EOL_MAC)
         buf_puts(out, "-mac");
-    if (s->bidir)
+    if (s->bools.get.bidir)
         buf_printf(out, "--%s", s->cur_rtl ? "RTL" : "LTR");
 
     if (s->input_method)
@@ -3251,8 +3263,7 @@ static void display_bol_bidir(DisplayState *ds, DirType base,
     }
     ds->left_gutter = 0;
     ds->x_line = ds->x_start;
-    ds->style = 0;
-    ds->last_style = 0;
+    ds->style = QE_STYLE_DEFAULT;
     ds->fragment_index = 0;
     ds->line_index = 0;
     ds->nb_fragments = 0;
@@ -3294,6 +3305,7 @@ void display_init(DisplayState *ds, EditState *e, enum DisplayType do_disp,
             ds->wrap = WRAP_LINE;
         }
     }
+
     /* select default values */
     get_style(e, &styledef, QE_STYLE_DEFAULT);
     font = select_font(e->screen, styledef.font_style, styledef.font_size);
@@ -3305,13 +3317,14 @@ void display_init(DisplayState *ds, EditState *e, enum DisplayType do_disp,
     ds->cur_hex_mode = 0;
     ds->y = e->y_disp;
     ds->line_num = 0;
-    ds->line_numbers = e->line_numbers * ds->space_width * 8;
-    if (ds->line_numbers > e->width / 2)
+
+    ds->line_numbers = e->bools.get.line_numbers * ds->space_width * 8;
+    if (!ds->line_numbers || ds->line_numbers > e->width / 2)
         ds->line_numbers = 0;
 
-    ds->fill_column = e->fill_column_indicator *
+    ds->fill_column = e->bools.get.fill_column_indicator *
         (ds->line_numbers + e->b->fill_column * ds->space_width);
-    if (ds->fill_column > e->width)
+    if (!ds->fill_column || ds->fill_column > e->width)
         ds->fill_column = 0;
 
     if (ds->wrap == WRAP_TERM) {
@@ -3429,9 +3442,9 @@ static void flush_line(DisplayState *ds,
     }
 
     /* draw everything if line is visible in window */
-    if (ds->do_disp == DISP_PRINT
-    &&  ds->y + line_height >= 0
-    &&  ds->y < e->ytop + e->height) {
+    if ((ds->do_disp == DISP_PRINT)
+        && ds->y + line_height >= 0
+        && ds->y < e->ytop + e->height) {
         QEStyleDef styledef, default_style;
         int no_display = 0;
 
@@ -3458,13 +3471,17 @@ static void flush_line(DisplayState *ds,
                 crc = compute_crc(fragments, sizeof(*fragments) * nb_fragments, 0);
                 crc = compute_crc(ds->line_chars, sizeof(*ds->line_chars) * ds->line_index, crc);
                 ls = &e->line_shadow[ds->line_num];
-                if (ls->y != ds->y || ls->x != ds->x_line
-                ||  ls->height != line_height || ls->crc != crc) {
+                if (ls->y != ds->y
+		    || ls->x != ds->x_line
+                    || ls->height != line_height
+		    || ls->crc != crc
+		    || ls->last_style != ds->last_style) {
                     /* update values for the line cache */
                     ls->y = ds->y;
                     ls->x = ds->x_line;
                     ls->height = line_height;
                     ls->crc = crc;
+		    ls->last_style = ds->last_style;
                 } else {
                     no_display = 1;
                 }
@@ -3473,7 +3490,7 @@ static void flush_line(DisplayState *ds,
 
         if (!no_display) {
             /* display */
-	    get_style(e, &default_style, QE_STYLE_DEFAULT);
+            get_style(e, &default_style, QE_STYLE_DEFAULT);
             x = ds->x_start;
             y = ds->y;
 
@@ -3495,11 +3512,24 @@ static void flush_line(DisplayState *ds,
                 x += frag->width;
             }
 
-            if (x < x1 && last != -1) {
-                /* XXX: color may be inappropriate for terminal mode */
-                fill_rectangle(screen, e->xleft + x, e->ytop + y,
-                               x1 - x, line_height, default_style.bg_color);
-            }
+
+	    if (last != -1) {
+		if (nb_fragments == 0
+		    || fragments[nb_fragments - 1].style != ds->last_style)
+		    get_style(e, &styledef, ds->last_style);
+
+		fill_rectangle(screen, e->xleft + x, e->ytop + y,
+		               ds->space_width, line_height, styledef.bg_color);
+		x += ds->space_width;
+
+		if ( x <= x1) {
+
+		    /* XXX: color may be inappropriate for terminal mode */
+		    fill_rectangle(screen, e->xleft + x, e->ytop + y,
+		                   x1 - x, line_height, default_style.bg_color);
+		}
+	    }
+
             if (x1 < e->width) {
                 /* right gutter like space beyond terminal right margin */
                 get_style(e, &styledef, QE_STYLE_GUTTER);
@@ -3540,25 +3570,25 @@ static void flush_line(DisplayState *ds,
                                    default_style.font_style,
                                    default_style.font_size);
                 draw_text(screen, font, e->xleft + x, e->ytop + y,
-		          markbuf, 1, default_style.fg_color);
+                          markbuf, 1, default_style.fg_color);
                 release_font(screen, font);
             }
-	}
-	/* Fill column indicator  */
-	if (ds->x < ds->fill_column) {
-		get_style(e, &styledef, QE_STYLE_GUTTER);
-		font = select_font(screen,
-		                   styledef.font_style,
-		                   styledef.font_size);
+        }
+        /* Fill column indicator  */
+        if (ds->x < ds->fill_column) {
+            get_style(e, &styledef, QE_STYLE_COLUMN_INDICATOR);
+            font = select_font(screen,
+                               styledef.font_style,
+                               styledef.font_size);
 
-		unsigned int markbuf = '|';
-		draw_text(screen, font,
-		          e->xleft + ds->fill_column,
-		          e->ytop + ds->y + font->ascent,
-		          &markbuf, 1, styledef.fg_color);
+            unsigned int markbuf = '|';
+            draw_text(screen, font,
+                      e->xleft + ds->fill_column,
+                      e->ytop + ds->y + font->ascent,
+                      &markbuf, 1, styledef.fg_color);
 
-		release_font(screen, font);
-	}
+            release_font(screen, font);
+        }
     }
 
     /* call cursor callback */
@@ -3570,7 +3600,7 @@ static void flush_line(DisplayState *ds,
         if (offset1 >= 0 && offset2 >= 0 &&
             ds->base == DIR_RTL &&
             ds->cursor_func(ds, offset1, offset2, ds->line_num,
-                           x, y, -ds->eol_width, line_height, e->hex_mode)) {
+                            x, y, -ds->eol_width, line_height, e->hex_mode)) {
             ds->eod = 1;
         }
 
@@ -3587,17 +3617,17 @@ static void flush_line(DisplayState *ds,
                 x += w;
                 if ((hex_mode == ds->hex_mode || ds->hex_mode == -1) &&
                     _offset1 >= 0 && _offset2 >= 0) {
-#if 0
+                    #if 0
                     /* probably broken, bidir needs rework */
                     if (ds->base == DIR_RTL) {
                         if (ds->cursor_func(ds, _offset1, _offset2, ds->line_num,
-                                           x, y, -w, line_height, hex_mode))
+                                            x, y, -w, line_height, hex_mode))
                             ds->eod = 1;
                     } else
-#endif
+                    #endif
                     {
                         if (ds->cursor_func(ds, _offset1, _offset2, ds->line_num,
-                                           x - w, y, w, line_height, hex_mode))
+                                            x - w, y, w, line_height, hex_mode))
                             ds->eod = 1;
                     }
                 }
@@ -3608,15 +3638,15 @@ static void flush_line(DisplayState *ds,
         if (offset1 >= 0 && offset2 >= 0 &&
             ds->base == DIR_LTR &&
             ds->cursor_func(ds, offset1, offset2, ds->line_num,
-                           x, y, ds->eol_width, line_height, e->hex_mode)) {
+                            x, y, ds->eol_width, line_height, e->hex_mode)) {
             ds->eod = 1;
         }
         ds->x_line = x;
     }
-#if 0
+    #if 0
     printf("y=%d line_num=%d line_height=%d baseline=%d\n",
            ds->y, ds->line_num, line_height, baseline);
-#endif
+    #endif
     if (last != -1) {
         /* bump to next line */
         ds->x_line = ds->x_start;
@@ -4001,7 +4031,7 @@ static void display1(DisplayState *ds)
 
     ds->eod = 0;
     offset = e->offset_top;
-    for (;;) {
+    while (1) {
         /* XXX: need early bailout from display_line if WRAP_TRUNCATE
            and far beyond the right border after cursor found.
         */
@@ -4339,7 +4369,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
     line_num = 0;
     /* XXX: should test a flag, to avoid this call in hex/binary */
-    if (s->line_numbers || s->colorize_func) {
+    if (s->bools.get.line_numbers || s->colorize_func) {
         eb_get_pos(s->b, &line_num, &col_num, offset);
     }
 
@@ -4347,7 +4377,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
 #ifdef CONFIG_UNICODE_JOIN
     /* compute the embedding levels and rle encode them */
-    if (s->bidir
+    if (s->bools.get.bidir
     &&  bidir_compute_attributes(embeds, RLE_EMBEDDINGS_SIZE,
                                  s->b, offset) > 2)
     {
@@ -4368,14 +4398,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
     display_bol_bidir(ds, base, embedding_max_level);
 
-    /* line numbers */
-    if (ds->line_numbers) {
-        ds->style = QE_STYLE_GUTTER;
-        display_printf(ds, -1, -1, "%6d ", line_num + 1);
-        ds->style = 0;
-	display_char(ds, -1, -1, ' ');
-    }
-
     /* prompt display, only on first line */
     if (s->prompt && offset1 == 0) {
         const char *p = s->prompt;
@@ -4389,7 +4411,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     colored_nb_chars = 0;
     offset0 = offset;
     if (s->colorize_func || s->b->b_styles
-    ||  s->curline_style || s->region_style
+    ||  s->bools.get.hl_current_line || s->region_style
     ||  s->isearch_state) {
         /* XXX: deal with truncation */
         colored_nb_chars = get_colorized_line(s, buf, countof(buf), sbuf,
@@ -4418,11 +4440,25 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
         }
     }
 
+    /* line numbers */
+    if (ds->line_numbers) {
+	const QETermStyle save_style = ds->style;
+	const QETermStyle save_last_style = ds->last_style;
+
+	ds->style = (s->bools.get.hl_current_line_number &&
+	             s->offset >= offset &&
+	             s->offset < offset0)
+		? QE_STYLE_CURRENT_LINUM : QE_STYLE_LINUM;
+        display_printf(ds, -1, -1, "%7d ", line_num + 1);
+        ds->style = save_style;
+	ds->last_style = save_last_style;
+    }
+
 #if 1
     /* colorize regions */
-    if (s->curline_style || s->region_style) {
+    if (s->bools.get.hl_current_line || s->region_style) {
         /* CG: Should combine styles instead of replacing */
-        if (s->region_style && !s->curline_style) {
+        if (s->region_style && !s->bools.get.hl_current_line) {
             int line, start_offset, end_offset;
             int i, start_char, end_char;
 
@@ -4436,27 +4472,31 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             if (start_offset < end_offset) {
                 /* Compute character positions */
                 eb_get_pos(s->b, &line, &start_char, start_offset);
-                if (end_offset >= offset0)
+                if (end_offset >= offset0) {
                     end_char = colored_nb_chars;
-                else
+		    ds->last_style = s->region_style;
+		} else {
                     eb_get_pos(s->b, &line, &end_char, end_offset);
+		}
 
                 for (i = start_char; i < end_char; i++) {
                     sbuf[i] = s->region_style;
                 }
             }
-        } else
-        if (s->curline_style && s->offset >= offset && s->offset <= offset0) {
+        } else if (s->bools.get.hl_current_line &&
+	           s->offset >= offset &&
+	           s->offset < offset0) {
             /* XXX: only if qs->active_window == s ? */
             for (i = 0; i < colored_nb_chars; i++)
-                sbuf[i] = s->curline_style;
+                sbuf[i] = QE_STYLE_CURRENT_LINE;
+	    ds->last_style = QE_STYLE_CURRENT_LINE;
         }
     }
 #endif
 
     bd = embeds + 1;
     char_index = 0;
-    for (;;) {
+    while (1) {
         offset0 = offset;
         if (offset >= s->b->total_size) {
             /* the offset passed here is for cursor positioning
@@ -4466,10 +4506,9 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             offset = -1; /* signal end of text */
             break;
         } else {
-            ds->style = 0;
-            if (char_index < colored_nb_chars) {
-                ds->style = sbuf[char_index];
-            }
+	    ds->style = (char_index <= colored_nb_chars ?
+	                 sbuf[char_index] : QE_STYLE_DEFAULT);
+
             c = eb_nextc(s->b, offset, &offset);
             if (c == '\n' && !(s->flags & WF_MINIBUF)) {
                 display_eol(ds, offset0, offset);
@@ -4485,21 +4524,19 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 if (c == '\r' && s->b->eol_type == EOL_MAC)
                     c = '\n';
                 display_printf(ds, offset0, offset, "^%c", ('@' + c) & 127);
-            } else
-            if (c >= 128
-            &&  (s->qe_state->show_unicode == 1 ||
-                 c == 0xfeff ||   /* Display BOM as \uFEFF to make it explicit */
-                 c > MAX_UNICODE_DISPLAY ||
-                 (c < 160 && s->b->charset == &charset_raw))) {
+            } else if (c >= 128
+	               &&  (s->qe_state->show_unicode == 1
+		            || c == 0xfeff   /* Display BOM as \uFEFF to make it explicit */
+		            || c > MAX_UNICODE_DISPLAY
+		            || (c < 160 && s->b->charset == &charset_raw))) {
                 /* display unsupported unicode code points as hex */
                 if (c > 0xffff) {
                     display_printf(ds, offset0, offset, "\\U%08x", c);
-                } else
-                if (c > 0xff) {
-                    display_printf(ds, offset0, offset, "\\u%04x", c);
-                } else {
-                    display_printf(ds, offset0, offset, "\\x%02x", c);
-                }
+                } else if (c > 0xff) {
+			display_printf(ds, offset0, offset, "\\u%04x", c);
+		} else {
+		    display_printf(ds, offset0, offset, "\\x%02x", c);
+		}
             } else {
                 display_char_bidir(ds, offset0, offset, embedding_level, c);
             }
@@ -4547,7 +4584,7 @@ static void generic_text_display(EditState *s)
     m->xc = m->yc = NO_CURSOR;
     display_init(ds, s, DISP_CURSOR_SCREEN, cursor_func, m);
     offset = s->offset_top;
-    for (;;) {
+    while (1) {
         if (ds->y <= 0) {
             s->offset_top = offset;
             s->y_disp = ds->y;
@@ -4589,8 +4626,7 @@ static void generic_text_display(EditState *s)
         yc = m->yc;
         if (yc < 0) {
             s->y_disp += -yc;
-        } else
-        if ((yc + m->cursor_height) > s->height) {
+        } else if ((yc + m->cursor_height) > s->height) {
             s->y_disp += s->height - (yc + m->cursor_height);
         }
     }
@@ -4618,8 +4654,7 @@ static void generic_text_display(EditState *s)
                     /* XXX: maybe scroll horizontally by a quarter screen? */
                     s->x_disp[m->basec] += -xc;
                 }
-            } else
-            if (xc + m->cursor_width >= ds->width) {
+            } else if (xc + m->cursor_width >= ds->width) {
                 /* XXX: maybe scroll horizontally by a quarter screen? */
                 s->x_disp[m->basec] += ds->width - (xc + m->cursor_width);
             }
@@ -5599,8 +5634,7 @@ static void qe_key_process(int key)
         qe_key_init(c);
         dpy_flush(&global_screen);
         return;
-    } else
-    if (c->nb_keys == kd->nb_keys) {
+    } else if (c->nb_keys == kd->nb_keys) {
     exec_cmd:
         d = kd->cmd;
         if (d->action.ES == do_numeric_argument && !c->describe_key) {
@@ -6642,7 +6676,7 @@ void minibuffer_edit(EditState *e, const char *input, const char *prompt,
                  qs->screen->width, qs->status_height, WF_MINIBUF);
     s->target_window = e;
     s->prompt = qe_strdup(prompt);
-    s->bidir = 0;
+    s->bools.get.bidir = 0;
     s->default_style = QE_STYLE_MINIBUF;
     /* XXX: should come from mode.default_wrap */
     s->wrap = WRAP_TRUNCATE;

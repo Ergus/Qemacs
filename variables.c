@@ -92,8 +92,6 @@ static VarDef var_table[] = {
           "Default text style for this window." )
     W_VAR( "region-style", region_style, VAR_NUMBER, VAR_RW,
           "Text style for the current region in this window." )
-    W_VAR( "curline-style", curline_style, VAR_NUMBER, VAR_RW,
-          "Text style for the current line in this window." )
     W_VAR( "window-width", width, VAR_NUMBER, VAR_RW,
           "Number of display columns in this window." )
     W_VAR( "window-height", height, VAR_NUMBER, VAR_RW,

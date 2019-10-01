@@ -1,18 +1,36 @@
     /* root style, must be complete */
-    STYLE_DEF(QE_STYLE_DEFAULT, "default", /* #f8d8b0 on black */
-              QERGB(0xf8, 0xd8, 0xb0), QERGB(0x00, 0x00, 0x00), QE_FONT_FAMILY_FIXED, 12)
+    STYLE_DEF(QE_STYLE_DEFAULT, "default",
+              QERGB(0xf8, 0xd8, 0xb0), QERGB(0x00, 0x00, 0x00),
+              QE_FONT_FAMILY_FIXED, 10)
 
     /* system styles */
-    STYLE_DEF(QE_STYLE_MODE_LINE, "mode-line", /* black on grey88 */
-              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0), 0, 0)
-    STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border", /* black on grey88 */
-              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0), 0, 0)
-    STYLE_DEF(QE_STYLE_MINIBUF, "minibuf", /* yellow */
-              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT, 0, 0)
-    STYLE_DEF(QE_STYLE_STATUS, "status", /* yellow */
-              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT, 0, 0)
-    STYLE_DEF(QE_STYLE_GUTTER, "gutter", /* #f84400 on grey25 */
-              QERGB(0xf8, 0x44, 0x00), QERGB(0x3f, 0x3f, 0x3f), 0, 0)
+    STYLE_DEF(QE_STYLE_MODE_LINE, "mode-line",
+              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
+              0, 0)
+    STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border",
+              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
+              0, 0)
+    STYLE_DEF(QE_STYLE_MINIBUF, "minibuf",
+              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT,
+              0, 0)
+    STYLE_DEF(QE_STYLE_STATUS, "status",
+              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT,
+              0, 0)
+    STYLE_DEF(QE_STYLE_GUTTER, "gutter",
+              QERGB(0xf8, 0x44, 0x00), QERGB(0x3f, 0x3f, 0x3f),
+              0, 0)
+    STYLE_DEF(QE_STYLE_COLUMN_INDICATOR, "column-indicator",
+              QERGB(0xf8, 0x44, 0x00), QERGB(0x00, 0x00, 0x00),
+              0, 0)
+    STYLE_DEF(QE_STYLE_LINUM, "linum",
+              QERGB(0xf8, 0x44, 0x00), QERGB(0x00, 0x00, 0x00),
+              0, 0)
+    STYLE_DEF(QE_STYLE_CURRENT_LINUM, "current-linum",
+              QERGB(0xf8, 0x44, 0x00), QERGB(0x3f, 0x3f, 0x3f),
+              0, 0)
+    STYLE_DEF(QE_STYLE_CURRENT_LINE, "current-line",
+              QERGB(0xf8, 0x44, 0x00), QERGB(0x3f, 0x3f, 0x3f),
+              0, 0)
 
     /* default style for HTML/CSS2 pages */
     STYLE_DEF(QE_STYLE_CSS_DEFAULT, "css-default", /* black on grey74 */

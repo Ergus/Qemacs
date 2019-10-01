@@ -358,10 +358,15 @@ static CmdDef basic_commands[] = {
           "what-cursor-position", do_what_cursor_position)
 
     /* non standard mappings */
-    CMD0( KEY_CTRLXRET('l'), KEY_CTRLC('l'),
-          "toggle-line-numbers", do_toggle_line_numbers)
-    CMD0( KEY_CTRLXRET('n'), KEY_CTRLC('n'),
-          "toggle-fill-column", do_toggle_fill_column_indicator)
+    CMD2( KEY_NONE, KEY_NONE,
+          "toggle-line-numbers", do_toggle_line_numbers, ES, "*")
+    CMD2( KEY_NONE, KEY_NONE,
+          "toggle-hl-line-number", do_toggle_hl_line_number, ES, "*")
+    CMD2( KEY_NONE, KEY_NONE,
+          "toggle-fill_column_indicator", do_toggle_fill_column_indicator, ES, "*")
+    CMD2( KEY_NONE, KEY_NONE,
+          "toggle-hl-current-line", do_toggle_hl_current_line, ES, "*")
+
     CMD0( KEY_CTRLXRET('t'), KEY_CTRLC('t'),
           "toggle-truncate-lines", do_toggle_truncate_lines)
     CMD0( KEY_CTRLXRET('w'), KEY_CTRLC('w'),

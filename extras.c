@@ -1485,7 +1485,7 @@ static void do_describe_window(EditState *s, int argval)
     eb_printf(b1, "%*s: %d\n", w, "unihex_mode", s->unihex_mode);
     eb_printf(b1, "%*s: %d\n", w, "hex_nibble", s->hex_nibble);
     eb_printf(b1, "%*s: %d\n", w, "insert", s->insert);
-    eb_printf(b1, "%*s: %d\n", w, "bidir", s->bidir);
+    eb_printf(b1, "%*s: %d\n", w, "bidir", s->bools.get.bidir);
     eb_printf(b1, "%*s: %d\n", w, "cur_rtl", s->cur_rtl);
     eb_printf(b1, "%*s: %d  %s\n", w, "wrap", s->wrap,
               s->wrap == WRAP_AUTO ? "AUTO" :
@@ -1493,8 +1493,8 @@ static void do_describe_window(EditState *s, int argval)
               s->wrap == WRAP_LINE ? "LINE" :
               s->wrap == WRAP_TERM ? "TERM" :
               s->wrap == WRAP_WORD ? "WORD" : "???");
-    eb_printf(b1, "%*s: %d\n", w, "line_numbers", s->line_numbers);
-    eb_printf(b1, "%*s: %d\n", w, "fill_column", s->fill_column_indicator);
+    eb_printf(b1, "%*s: %d\n", w, "line_numbers", s->bools.get.line_numbers);
+    eb_printf(b1, "%*s: %d\n", w, "fill_column", s->bools.get.fill_column_indicator);
     eb_printf(b1, "%*s: %d\n", w, "indent_size", s->indent_size);
     eb_printf(b1, "%*s: %d\n", w, "indent_tabs_mode", s->indent_tabs_mode);
     eb_printf(b1, "%*s: %d\n", w, "interactive", s->interactive);
@@ -1514,7 +1514,7 @@ static void do_describe_window(EditState *s, int argval)
     eb_printf(b1, "%*s: %d\n", w, "borders_invalid", s->borders_invalid);
     eb_printf(b1, "%*s: %d\n", w, "show_selection", s->show_selection);
     eb_printf(b1, "%*s: %d\n", w, "region_style", s->region_style);
-    eb_printf(b1, "%*s: %d\n", w, "curline_style", s->curline_style);
+    eb_printf(b1, "%*s: %d\n", w, "curline_style", s->bools.get.hl_current_line);
     eb_putc(b1, '\n');
 
     b1->flags |= BF_READONLY;

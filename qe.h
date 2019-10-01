@@ -1375,6 +1375,7 @@ typedef struct QELineShadow {
     int x;
     short y;
     short height;
+    QETermStyle last_style;
 } QELineShadow;
 
 enum WrapType {
@@ -1387,6 +1388,17 @@ enum WrapType {
 
 #define DIR_LTR 0
 #define DIR_RTL 1
+
+union bitset {
+    uint mask:5;
+    struct {
+	uint line_numbers:1;
+	uint hl_current_line_number:1;
+	uint hl_current_line:1;
+	uint fill_column_indicator:1;
+	uint bidir:1;
+    } get;
+};
 
 struct EditState {
     int offset;     /* offset of the cursor */
@@ -1401,12 +1413,10 @@ struct EditState {
     int unihex_mode; /* true if unihex editing (width of hex char dump) */
     int hex_nibble;  /* current hexa nibble */
     int insert;      /* insert/overtype mode */
-    int bidir;
     int cur_rtl;     /* TRUE if the cursor on over RTL chars */
     enum WrapType wrap;
     int wrap_cols;   /* number of columns in terminal emulator */
-    int line_numbers;
-    int fill_column_indicator; /* Boolean to fill column or not */
+    union bitset bools; /* Boolean variables grouped  */
     /* XXX: these should be buffer specific rather than window specific */
     int indent_size;
     int indent_tabs_mode; /* if true, use tabs to indent */
@@ -1455,7 +1465,6 @@ struct EditState {
     int show_selection;  /* if true, the selection is displayed */
 
     int region_style;
-    int curline_style;
 
     /* display area info */
     int xleft, ytop;
