@@ -114,6 +114,7 @@ enum TermCode {
     TERM_ANSI,
     TERM_VT100,
     TERM_XTERM,
+    TERM_TMUX,
     TERM_LINUX,
     TERM_CYGWIN,
     TERM_TW100,
@@ -198,18 +199,16 @@ static int tty_dpy_init(QEditScreen *s,
         if (strstart(ts->term_name, "ansi", NULL)) {
             ts->term_code = TERM_ANSI;
             ts->term_flags |= KBS_CONTROL_H;
-        } else
-        if (strstart(ts->term_name, "vt100", NULL)) {
+        } else if (strstart(ts->term_name, "vt100", NULL)) {
             ts->term_code = TERM_VT100;
             ts->term_flags |= KBS_CONTROL_H;
-        } else
-        if (strstart(ts->term_name, "xterm", NULL)) {
+        } else if (strstart(ts->term_name, "xterm", NULL)) {
             ts->term_code = TERM_XTERM;
-        } else
-        if (strstart(ts->term_name, "linux", NULL)) {
+        } else if (strstart(ts->term_name, "tmux", NULL)) {
+            ts->term_code = TERM_TMUX;
+        } else if (strstart(ts->term_name, "linux", NULL)) {
             ts->term_code = TERM_LINUX;
-        } else
-        if (strstart(ts->term_name, "cygwin", NULL)) {
+        } else if (strstart(ts->term_name, "cygwin", NULL)) {
             ts->term_code = TERM_CYGWIN;
             ts->term_flags |= KBS_CONTROL_H |
                               USE_BOLD_AS_BRIGHT_FG | USE_BLINK_AS_BRIGHT_BG;
@@ -928,6 +927,7 @@ static void comb_cache_describe(QEditScreen *s, EditBuffer *b) {
               ts->term_code == TERM_ANSI ? "ANSI" :
               ts->term_code == TERM_VT100 ? "VT100" :
               ts->term_code == TERM_XTERM ? "XTERM" :
+              ts->term_code == TERM_TMUX ? "TMUX" :
               ts->term_code == TERM_LINUX ? "LINUX" :
               ts->term_code == TERM_CYGWIN ? "CYGWIN" :
               ts->term_code == TERM_TW100 ? "TW100" :

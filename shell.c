@@ -400,7 +400,8 @@ static void qe_term_init(ShellState *s)
         s->kf19 = "\033[33~";
         s->kf20 = "\033[34~";
     }
-    if (strstart(term, "xterm", NULL)) {
+    if (strstart(term, "xterm", NULL)
+	|| strstart(term, "tmux", NULL)) {
         s->ka1 = "\033Ow";
         s->ka3 = "\033Ou";
         s->kb2 = "\033Oy";
