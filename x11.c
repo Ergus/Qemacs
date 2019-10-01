@@ -1960,7 +1960,7 @@ static int x11_dpy_draw_picture(QEditScreen *s,
     return status;
 }
 
-static QEDisplay x11_dpy = {
+static  QEDisplay x11_dpy = {
     "x11", 1, 1,
     x11_dpy_probe,
     x11_dpy_init,

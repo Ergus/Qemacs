@@ -456,9 +456,8 @@ CmdDef popup_commands[] = {
 
 QEStyleDef qe_styles[QE_STYLE_NB] = {
 
-#define STYLE_DEF(constant, name, fg_color, bg_color, \
-                  font_style, font_size) \
-{ name, fg_color, bg_color, font_style, font_size },
+#define STYLE_DEF(constant, name, fg_color, bg_color, font_style, font_size) \
+    { name, fg_color, bg_color, font_style, font_size },
 
 #include "qestyles.h"
 

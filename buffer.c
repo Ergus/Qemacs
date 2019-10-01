@@ -1460,12 +1460,10 @@ int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
                     offset += b->charset_state.char_size;
                     ch = '\n';
                 }
-            } else
-            if (b->eol_type == EOL_MAC) {
+            } else if (b->eol_type == EOL_MAC) {
                 ch = '\n';
             }
-        } else
-        if (ch == '\n') {
+        } else if (ch == '\n') {
             if (b->eol_type == EOL_MAC) {
                 ch = '\r';
             }
@@ -1651,12 +1649,10 @@ int eb_goto_pos(EditBuffer *b, int line1, int col1)
 int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset)
 {
     Page *p, *p_end;
-    int line, col, line1, col1;
+    int line = 0, col = 0, line1, col1;
 
     QASSERT(offset >= 0);
 
-    line = 0;
-    col = 0;
     p = b->page_table;
     p_end = p + b->nb_pages;
     for (;;) {

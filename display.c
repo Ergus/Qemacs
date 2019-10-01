@@ -291,7 +291,7 @@ QEFont *select_font(QEditScreen *s, int style, int size)
     min_ts = INT_MAX;
     min_index = -1;
     for (i = 0; i < FONT_CACHE_SIZE; i++) {
-        fc = font_cache[i];
+	fc = font_cache[i];
         if (fc) {
             if (fc->style == style && fc->size == size) {
                 goto found;

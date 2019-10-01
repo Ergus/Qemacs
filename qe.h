@@ -605,7 +605,7 @@ typedef struct bstr_t {
 } bstr_t;
 
 static inline bstr_t bstr_make(const char *s) {
-    bstr_t bs = { s, s ? strlen(s) : 0 };
+    bstr_t bs = { s, (int)(s ? strlen(s) : 0) };
     return bs;
 }
 
@@ -1879,6 +1879,9 @@ struct DisplayState {
     int hex_mode;       /* hex mode from edit_state, -1 if all chars wanted */
     int line_numbers;   /* display line numbers if enough space */
     int fill_column;    /* display fill column number */
+    QETermStyle style;   /* current style for display_printf... */
+    QETermStyle last_style;
+
     void *cursor_opaque;
     int (*cursor_func)(struct DisplayState *,
                        int offset1, int offset2, int line_num,
@@ -1890,7 +1893,6 @@ struct DisplayState {
     int wrap;
     int eol_reached;
     EditState *edit_state;
-    QETermStyle style;   /* current style for display_printf... */
 
     /* fragment buffers */
     TextFragment fragments[MAX_SCREEN_WIDTH];
@@ -1912,7 +1914,6 @@ struct DisplayState {
     int fragment_index;
     int last_space;
     int last_embedding_level;
-    QETermStyle last_style;
 };
 
 enum DisplayType {
