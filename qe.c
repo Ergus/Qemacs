@@ -3558,19 +3558,18 @@ static void flush_line(DisplayState *ds,
 
             if (last == 0 && ds->eol_width != 0) {
                 /* draw eol mark */
-                unsigned int markbuf[1];
+                unsigned int markbuf = '/'; /* RTL eol mark */
 
-                markbuf[0] = '/';        /* RTL eol mark */
                 x = 0;                   /* displayed at the left border */
                 if (ds->base == DIR_LTR) {
-                    markbuf[0] = '\\';   /* LTR eol mark */
+                    markbuf = '\\';   /* LTR eol mark */
                     x = ds->width;        /* displayed at the right border */
                 }
                 font = select_font(screen,
                                    default_style.font_style,
                                    default_style.font_size);
                 draw_text(screen, font, e->xleft + x, e->ytop + y,
-                          markbuf, 1, default_style.fg_color);
+                          &markbuf, 1, default_style.fg_color);
                 release_font(screen, font);
             }
         }
