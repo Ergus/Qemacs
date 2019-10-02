@@ -3264,6 +3264,7 @@ static void display_bol_bidir(DisplayState *ds, DirType base,
     ds->left_gutter = 0;
     ds->x_line = ds->x_start;
     ds->style = QE_STYLE_DEFAULT;
+    ds->last_style = QE_STYLE_DEFAULT;
     ds->fragment_index = 0;
     ds->line_index = 0;
     ds->nb_fragments = 0;
@@ -3472,16 +3473,16 @@ static void flush_line(DisplayState *ds,
                 crc = compute_crc(ds->line_chars, sizeof(*ds->line_chars) * ds->line_index, crc);
                 ls = &e->line_shadow[ds->line_num];
                 if (ls->y != ds->y
-		    || ls->x != ds->x_line
+                    || ls->x != ds->x_line
                     || ls->height != line_height
-		    || ls->crc != crc
-		    || ls->last_style != ds->last_style) {
+                    || ls->crc != crc
+                    || ls->last_style != ds->last_style) {
                     /* update values for the line cache */
                     ls->y = ds->y;
                     ls->x = ds->x_line;
                     ls->height = line_height;
                     ls->crc = crc;
-		    ls->last_style = ds->last_style;
+                    ls->last_style = ds->last_style;
                 } else {
                     no_display = 1;
                 }
@@ -3513,22 +3514,22 @@ static void flush_line(DisplayState *ds,
             }
 
 
-	    if (last != -1) {
-		if (nb_fragments == 0
-		    || fragments[nb_fragments - 1].style != ds->last_style)
-		    get_style(e, &styledef, ds->last_style);
+            if (last != -1) {
+                if (nb_fragments == 0
+                    || fragments[nb_fragments - 1].style != ds->last_style)
+                    get_style(e, &styledef, ds->last_style);
 
-		fill_rectangle(screen, e->xleft + x, e->ytop + y,
-		               ds->space_width, line_height, styledef.bg_color);
-		x += ds->space_width;
+                fill_rectangle(screen, e->xleft + x, e->ytop + y,
+                               ds->space_width, line_height, styledef.bg_color);
+                x += ds->space_width;
 
-		if ( x <= x1) {
+                if ( x <= x1) {
 
-		    /* XXX: color may be inappropriate for terminal mode */
-		    fill_rectangle(screen, e->xleft + x, e->ytop + y,
-		                   x1 - x, line_height, default_style.bg_color);
-		}
-	    }
+                    /* XXX: color may be inappropriate for terminal mode */
+                    fill_rectangle(screen, e->xleft + x, e->ytop + y,
+                                   x1 - x, line_height, default_style.bg_color);
+                }
+            }
 
             if (x1 < e->width) {
                 /* right gutter like space beyond terminal right margin */
@@ -3574,6 +3575,7 @@ static void flush_line(DisplayState *ds,
             }
         }
         /* Fill column indicator  */
+
         if (ds->x < ds->fill_column) {
             get_style(e, &styledef, QE_STYLE_COLUMN_INDICATOR);
             font = select_font(screen,
@@ -4442,7 +4444,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     /* line numbers */
     if (ds->line_numbers) {
 	const QETermStyle save_style = ds->style;
-	const QETermStyle save_last_style = ds->last_style;
 
 	ds->style = (s->bools.get.hl_current_line_number &&
 	             s->offset >= offset &&
@@ -4450,7 +4451,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 		? QE_STYLE_CURRENT_LINUM : QE_STYLE_LINUM;
         display_printf(ds, -1, -1, "%7d ", line_num + 1);
         ds->style = save_style;
-	ds->last_style = save_last_style;
     }
 
 #if 1
@@ -4473,7 +4473,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 eb_get_pos(s->b, &line, &start_char, start_offset);
                 if (end_offset >= offset0) {
                     end_char = colored_nb_chars;
-		    ds->last_style = s->region_style;
 		} else {
                     eb_get_pos(s->b, &line, &end_char, end_offset);
 		}
@@ -4481,6 +4480,8 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 for (i = start_char; i < end_char; i++) {
                     sbuf[i] = s->region_style;
                 }
+		if (start_char == end_char)
+		    ds->last_style = s->region_style;
             }
         } else if (s->bools.get.hl_current_line &&
 	           s->offset >= offset &&
