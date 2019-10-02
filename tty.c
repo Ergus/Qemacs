@@ -309,7 +309,8 @@ static int tty_dpy_init(QEditScreen *s,
                 "\033[?7h"          /* enter_am_mode */
                 "\033[39;49m"       /* orig_pair */
                 "\033[?1h\033="     /* keypad_xmit */
-                "\033[?1000h"       /* report mouse events */
+                //"\033[?1000h"       /* report mouse events */
+                "\033[?1002h"       /* report mouse events */
                );
 #endif
 
@@ -394,7 +395,9 @@ static void tty_dpy_close(QEditScreen *s)
                 "\033[?1l\033>"     /* keypad_local */
                 "\033[?25h"         /* show cursor */
                 "\r\033[m\033[K"    /* return erase eol */
-                "\033[?1000l"       /* report mouse events */
+                //"\033[?1000l"       /* report mouse events */
+                "\033[?1002l"       /* report mouse events */
+
                );
 #endif
     fflush(s->STDOUT);
@@ -732,15 +735,20 @@ static void tty_read_handler(void *opaque)
         }
         break;
     case IS_MOUSE:
-        if (ts->mouse.type == QE_KEY_EVENT) {
+        if (ts->mouse.type == QE_KEY_EVENT) {  // Key
 	    const int but_or_release = ch & 3;
+
 	    if (but_or_release == 3)
-                ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
+		ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
 	    else {
 		ts->mouse.button = (1 << but_or_release);
 		ts->mouse.type = QE_BUTTON_PRESS_EVENT;
 	    }
-        } else {
+
+	    if (ch & 64) // If this is a movement, not a click
+		ts->mouse.type = QE_MOTION_EVENT;
+
+        } else { // Position
             const int pos = ch - 33;
 	    if (ts->mouse.x < 0) {
                 ts->mouse.x = pos;
