@@ -1972,7 +1972,8 @@ void do_kill_line(EditState *s, int argval)
 
     p1 = s->offset;
     if (argval == NO_ARG) {
-        if (s->region_style && s->b->mark != s->offset) {
+        if (s->region_style != QE_STYLE_DEFAULT
+	    && s->b->mark != s->offset) {
             /* kill highlighted region */
             p1 = s->b->mark;
             p2 = s->offset;
@@ -4411,9 +4412,11 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     /* colorize */
     colored_nb_chars = 0;
     offset0 = offset;
-    if (s->colorize_func || s->b->b_styles
-    ||  s->bools.get.hl_current_line || s->region_style
-    ||  s->isearch_state) {
+    if (s->colorize_func
+        || s->b->b_styles
+        || s->bools.get.hl_current_line
+        || s->region_style != QE_STYLE_DEFAULT
+        || s->isearch_state) {
         /* XXX: deal with truncation */
         colored_nb_chars = get_colorized_line(s, buf, countof(buf), sbuf,
                                               offset, &offset0, line_num);
@@ -4455,9 +4458,12 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
 #if 1
     /* colorize regions */
-    if (s->bools.get.hl_current_line || s->region_style) {
+    if (s->bools.get.hl_current_line
+        || s->region_style != QE_STYLE_DEFAULT) {
         /* CG: Should combine styles instead of replacing */
-        if (s->region_style && !s->bools.get.hl_current_line) {
+        if (s->region_style != QE_STYLE_DEFAULT
+	    && !s->bools.get.hl_current_line) {
+
             int line, start_offset, end_offset;
             int i, start_char, end_char;
 
