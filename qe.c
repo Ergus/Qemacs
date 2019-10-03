@@ -3001,6 +3001,8 @@ static void apply_style(QEStyleDef *stp, QETermStyle style)
             stp->font_style = s->font_style;
         if (s->font_size != 0)
             stp->font_size = s->font_size;
+	if (s->extensible)
+	    stp->extensible = s->extensible;
     }
 }
 
@@ -3514,14 +3516,17 @@ static void flush_line(DisplayState *ds,
                     get_style(e, &styledef, ds->eol_style);
 
                 fill_rectangle(screen, e->xleft + x, e->ytop + y,
-                               ds->space_width, line_height, styledef.bg_color);
+		               ds->space_width, line_height, styledef.bg_color);
                 x += ds->space_width;
 
                 if ( x <= x1) {
+		    QEStyleDef *ptr = &default_style;
+		    if (styledef.extensible)
+			ptr = &styledef;
 
                     /* XXX: color may be inappropriate for terminal mode */
                     fill_rectangle(screen, e->xleft + x, e->ytop + y,
-                                   x1 - x, line_height, default_style.bg_color);
+                                   x1 - x, line_height, ptr->bg_color);
                 }
             }
 
@@ -3544,9 +3549,9 @@ static void flush_line(DisplayState *ds,
                     font = select_font(screen,
                                        styledef.font_style, styledef.font_size);
                     draw_text(screen, font,
-                              e->xleft + x - frag->width, e->ytop + y,
-                              ds->line_chars + frag->line_index,
-                              frag->len, styledef.fg_color);
+		              e->xleft + x - frag->width, e->ytop + y,
+		              ds->line_chars + frag->line_index,
+		              frag->len, styledef.fg_color);
                     release_font(screen, font);
                 }
             }

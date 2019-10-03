@@ -1608,13 +1608,13 @@ int qe_free_mode_data(QEModeData *md);
 extern int force_tty;
 
 enum QEStyle {
-#define STYLE_DEF(constant, name, fg_color, bg_color, \
-                  font_style, font_size) \
-                  constant,
+    #define STYLE_DEF(constant, name, fg_color, bg_color,	\
+                      font_style, font_size, extend)		\
+	constant,
 
-#include "qestyles.h"
+    #include "qestyles.h"
 
-#undef STYLE_DEF
+    #undef STYLE_DEF
     QE_STYLE_NB,
 };
 
@@ -1624,6 +1624,7 @@ typedef struct QEStyleDef {
     QEColor fg_color, bg_color;
     short font_style;
     short font_size;
+    unsigned char extensible;  // Here are 7 empty bits we can use in the future.
 } QEStyleDef;
 
 /* CG: Should register styles as well */
