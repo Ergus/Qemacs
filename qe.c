@@ -6384,15 +6384,14 @@ void do_minibuffer_complete(EditState *s, int type)
                 h1 = qs->screen->height - qs->status_height;
                 w = w1;
                 h = h1 / 4;
-                e = edit_new(b, (w1 - w) / 2, (h1 - h), w, h, WF_POPUP);
+                e = edit_new(b, (w1 - w) / 2, (h1 - h), w, h, (WF_TOP | WF_LEFT | WF_RIGHT));
                 snprintf(buf, sizeof buf, "Select a %s:", mb->completion->name);
                 e->caption = qe_strdup(buf);
                 e->target_window = s;
                 mb->completion_popup_window = e;
                 do_refresh(e);
             }
-        } else
-        if (count == 0 || type != COMPLETION_OTHER) {
+        } else if (count == 0 || type != COMPLETION_OTHER) {
             /* close the popup when minibuf contents matches nothing */
             edit_close(&mb->completion_popup_window);
             do_refresh(s);
