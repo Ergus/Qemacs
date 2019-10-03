@@ -946,7 +946,7 @@ void do_changecase_region(EditState *s, int arg)
     int offset;
 
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     /* WARNING: during case change, the region offsets can change, so
        it is not so simple ! */
@@ -1597,7 +1597,7 @@ int do_delete_selection(EditState *s)
         res = eb_delete_range(s->b, s->b->mark, s->offset);
     }
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     return res;
 }
@@ -1666,7 +1666,7 @@ void text_write_char(EditState *s, int key)
     /* XXX: Should delete hilighted region */
 
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     cur_ch = eb_nextc(s->b, s->offset, &offset1);
     cur_len = offset1 - s->offset;
@@ -1869,7 +1869,7 @@ void do_break(EditState *s)
     }
 #endif
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
     /* deactivate search hilite */
     s->isearch_state = NULL;
 
@@ -1927,7 +1927,7 @@ void do_kill(EditState *s, int p1, int p2, int dir, int keep)
     EditBuffer *b;
 
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     if (p1 > p2) {
         tmp = p1;
@@ -5847,7 +5847,7 @@ void switch_to_buffer(EditState *s, EditBuffer *b)
     ModeDef *mode;
 
     /* remove region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     if (b == b0)
         return;
@@ -7620,7 +7620,7 @@ void do_write_region(EditState *s, const char *filename)
     char absname[MAX_FILENAME_SIZE];
 
     /* deactivate region hilite */
-    s->region_style = 0;
+    s->region_style = QE_STYLE_DEFAULT;
 
     canonicalize_absolute_path(s, absname, sizeof(absname), filename);
     put_save_message(s, filename,
@@ -8422,9 +8422,8 @@ static void save_selection(void)
 {
     QEmacsState *qs = &qe_state;
     EditState *e;
-    int selection_showed;
+    int selection_showed = 0;
 
-    selection_showed = 0;
     for (e = qs->first_window; e != NULL; e = e->next_window) {
         selection_showed |= e->show_selection;
         e->show_selection = 0;
@@ -8531,7 +8530,8 @@ void qe_mouse_event(QEEvent *ev)
             {
                 e = motion_target;
                 if (!check_motion_target(e)) {
-                    e->show_selection = 0;
+		    if (e->qe_state->hilite_region)
+			e->region_style = QE_STYLE_DEFAULT;
                     motion_type = MOTION_NONE;
                 } else {
                     /* put a mark if first move */
@@ -8542,7 +8542,8 @@ void qe_mouse_event(QEEvent *ev)
                         motion_x = 1;
                     }
                     /* highlight selection */
-                    e->show_selection = 1;
+		    if (e->qe_state->hilite_region)
+			e->region_style = QE_STYLE_REGION_HILITE;
                     if (mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
                         mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
                             /* if inside the buffer, then update cursor
