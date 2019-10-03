@@ -8428,8 +8428,9 @@ static void save_selection(void)
     int selection_showed = 0;
 
     for (e = qs->first_window; e != NULL; e = e->next_window) {
-        selection_showed |= e->show_selection;
-        e->show_selection = 0;
+        selection_showed |= (e->region_style != QE_STYLE_DEFAULT);
+	if (qs->active_window != e)
+	    e->region_style = QE_STYLE_DEFAULT;
     }
     if (selection_showed && motion_type == MOTION_TEXT) {
         motion_type = MOTION_NONE;
