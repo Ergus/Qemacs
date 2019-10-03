@@ -3897,16 +3897,13 @@ int display_char_bidir(DisplayState *ds, int offset1, int offset2,
 
     /* special code to colorize block */
     e = ds->edit_state;
-    if (e->show_selection || e->region_style) {
+    if (e->region_style != QE_STYLE_DEFAULT) {
         int mark = e->b->mark;
         int offset = e->offset;
 
         if ((offset1 >= offset && offset1 < mark) ||
             (offset1 >= mark && offset1 < offset)) {
-            if (e->show_selection)
-                style |= QE_STYLE_SEL;
-            else
-                style = e->region_style;
+	    style = e->region_style;
         }
     }
     /* special patch for selection in hex mode */
