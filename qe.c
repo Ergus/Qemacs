@@ -1154,8 +1154,8 @@ void do_left_right(EditState *s, int dir)
     if (s->b->flags & BF_PREVIEW) {
         EditState *e = find_window(s, KEY_LEFT, NULL);
         if (e && (e->flags & WF_FILELIST)
-        &&  s->qe_state->active_window == s
-        &&  dir < 0 && eb_at_bol(s->b, s->offset)) {
+	    &&  s->qe_state->active_window == s
+	    &&  dir < 0 && eb_at_bol(s->b, s->offset)) {
             s->qe_state->active_window = e;
             return;
         }
@@ -6378,9 +6378,9 @@ void do_minibuffer_complete(EditState *s, int type)
                 b->default_mode = &list_mode;
                 w1 = qs->screen->width;
                 h1 = qs->screen->height - qs->status_height;
-                w = (w1 * 3) / 4;
-                h = (h1 * 3) / 4;
-                e = edit_new(b, (w1 - w) / 2, (h1 - h) / 2, w, h, WF_POPUP);
+                w = w1;
+                h = h1 / 4;
+                e = edit_new(b, (w1 - w) / 2, (h1 - h), w, h, WF_POPUP);
                 snprintf(buf, sizeof buf, "Select a %s:", mb->completion->name);
                 e->caption = qe_strdup(buf);
                 e->target_window = s;

@@ -1477,7 +1477,7 @@ struct EditState {
 #define WF_RIGHT  0x0008 /* Right Border */
 
 /* popup window (with all borders) */
-#define WF_POPUP      (WF_TOP | WF_DOWN | WF_LEFT | WF_RIGHT)
+#define WF_POPUP      (WF_TOP | WF_BOTTOM | WF_LEFT | WF_RIGHT)
 #define WF_MODELINE   0x0020 /* mode line must be displayed */
 #define WF_RSEPARATOR 0x0040 /* right window separator */
 #define WF_POPLEFT    0x0080 /* left side window */
