@@ -2928,13 +2928,17 @@ void display_window_borders(EditState *e)
                 int left_w = qs->border_width;
                 int right_w = qs->border_width;
 
-                fill_rectangle(qs->screen, x, y, width, top_h, color);
-                fill_rectangle(qs->screen, x, y + bottom_h,
-                               left_w, height - top_h - bottom_h, color);
-                fill_rectangle(qs->screen, x + width - right_w, y + top_h,
-                               right_w, height - top_h - bottom_h, color);
-                fill_rectangle(qs->screen, x, y + height - bottom_h,
-                               width, bottom_h, color);
+		if (e->flags & WF_TOP)
+		    fill_rectangle(qs->screen, x, y, width, top_h, color);
+		if (e->flags & WF_LEFT)
+		    fill_rectangle(qs->screen, x, y + bottom_h,
+		                   left_w, height - top_h - bottom_h, color);
+		if (e->flags & WF_RIGHT)
+		    fill_rectangle(qs->screen, x + width - right_w, y + top_h,
+		                   right_w, height - top_h - bottom_h, color);
+		if (e->flags & WF_BOTTOM)
+		    fill_rectangle(qs->screen, x, y + height - bottom_h,
+		                   width, bottom_h, color);
                 /* display caption */
                 if (e->caption) {
                     QEStyleDef styledef;
