@@ -1512,7 +1512,6 @@ static void do_describe_window(EditState *s, int argval)
     eb_printf(b1, "%*s: %d\n", w, "busy", s->busy);
     eb_printf(b1, "%*s: %d\n", w, "display_invalid", s->display_invalid);
     eb_printf(b1, "%*s: %d\n", w, "borders_invalid", s->borders_invalid);
-    eb_printf(b1, "%*s: %d\n", w, "show_selection", s->show_selection);
     eb_printf(b1, "%*s: %d\n", w, "region_style", s->region_style);
     eb_printf(b1, "%*s: %d\n", w, "curline_style", s->bools.get.hl_current_line);
     eb_putc(b1, '\n');

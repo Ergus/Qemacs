@@ -3002,13 +3002,6 @@ static void apply_style(QEStyleDef *stp, QETermStyle style)
         if (s->font_size != 0)
             stp->font_size = s->font_size;
     }
-    /* for selection, we need a special handling because only color is
-           changed */
-    if (style & QE_STYLE_SEL) {
-        s = &qe_styles[QE_STYLE_SELECTION];
-        stp->fg_color = s->fg_color;
-        stp->bg_color = s->bg_color;
-    }
 }
 
 void get_style(EditState *e, QEStyleDef *stp, QETermStyle style)
@@ -4432,7 +4425,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             if (buf[0] == '*') {
                 /* selection */
                 for (i = 0; i <= colored_nb_chars; i++) {
-                    sbuf[i] |= QE_STYLE_SEL;
+                    sbuf[i] |= QE_STYLE_SELECTION;
                 }
             }
         }

@@ -254,7 +254,6 @@ typedef unsigned int QEColor;
 #define QE_TERM_STYLE_BITS  64
 typedef uint64_t QETermStyle;
 #define QE_STYLE_NUM        0x00FF
-#define QE_STYLE_SEL        0x02000000  /* special selection style (cumulative with another style) */
 #define QE_TERM_COMPOSITE   0x04000000  /* special bit to indicate qe-term composite style */
 /* XXX: reversed as attribute? */
 /* XXX: faint? */
@@ -272,7 +271,6 @@ typedef uint64_t QETermStyle;
 #define QE_TERM_STYLE_BITS  32
 typedef uint32_t QETermStyle;
 #define QE_STYLE_NUM        0x00FF
-#define QE_STYLE_SEL        0x02000  /* special selection style (cumulative with another style) */
 #define QE_TERM_COMPOSITE   0x04000  /* special bit to indicate qe-term composite style */
 #define QE_TERM_UNDERLINE   0x08000
 #define QE_TERM_BOLD        0x10000
@@ -288,7 +286,6 @@ typedef uint32_t QETermStyle;
 #define QE_TERM_STYLE_BITS  32
 typedef uint32_t QETermStyle;
 #define QE_STYLE_NUM        0x00FF
-#define QE_STYLE_SEL        0x0100  /* special selection style (cumulative with another style) */
 #define QE_TERM_COMPOSITE   0x0200  /* special bit to indicate qe-term composite style */
 #define QE_TERM_UNDERLINE   0x0400
 #define QE_TERM_BOLD        0x0800
@@ -304,7 +301,6 @@ typedef uint32_t QETermStyle;
 #define QE_TERM_STYLE_BITS  16
 typedef uint16_t QETermStyle;
 #define QE_STYLE_NUM        0x00FF
-#define QE_STYLE_SEL        0x0100  /* special selection style (cumulative with another style) */
 #define QE_TERM_COMPOSITE   0x0200  /* special bit to indicate qe-term composite style */
 #define QE_TERM_UNDERLINE   0x0400
 #define QE_TERM_BOLD        0x0800
@@ -1462,7 +1458,6 @@ struct EditState {
     int display_invalid; /* true if the display was invalidated. Full
                             redraw should be done */
     int borders_invalid; /* true if window borders should be redrawn */
-    int show_selection;  /* if true, the selection is displayed */
 
     int region_style;
 
