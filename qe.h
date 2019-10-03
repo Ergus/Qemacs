@@ -1371,7 +1371,7 @@ typedef struct QELineShadow {
     int x;
     short y;
     short height;
-    QETermStyle last_style;
+    QETermStyle eol_style;
 } QELineShadow;
 
 enum WrapType {
@@ -1885,6 +1885,7 @@ struct DisplayState {
     int fill_column;    /* display fill column number */
     QETermStyle style;   /* current style for display_printf... */
     QETermStyle last_style;
+    QETermStyle eol_style;
 
     void *cursor_opaque;
     int (*cursor_func)(struct DisplayState *,

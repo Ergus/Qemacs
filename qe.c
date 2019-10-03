@@ -3470,13 +3470,13 @@ static void flush_line(DisplayState *ds,
                     || ls->x != ds->x_line
                     || ls->height != line_height
                     || ls->crc != crc
-                    || ls->last_style != ds->last_style) {
+                    || ls->eol_style != ds->eol_style) {
                     /* update values for the line cache */
                     ls->y = ds->y;
                     ls->x = ds->x_line;
                     ls->height = line_height;
                     ls->crc = crc;
-                    ls->last_style = ds->last_style;
+                    ls->eol_style = ds->eol_style;
                 } else {
                     no_display = 1;
                 }
@@ -3510,8 +3510,8 @@ static void flush_line(DisplayState *ds,
 
             if (last != -1) {
                 if (nb_fragments == 0
-                    || fragments[nb_fragments - 1].style != ds->last_style)
-                    get_style(e, &styledef, ds->last_style);
+                    || fragments[nb_fragments - 1].style != ds->eol_style)
+                    get_style(e, &styledef, ds->eol_style);
 
                 fill_rectangle(screen, e->xleft + x, e->ytop + y,
                                ds->space_width, line_height, styledef.bg_color);
@@ -4370,8 +4370,8 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 #ifdef CONFIG_UNICODE_JOIN
     /* compute the embedding levels and rle encode them */
     if (s->bools.get.bidir
-    &&  bidir_compute_attributes(embeds, RLE_EMBEDDINGS_SIZE,
-                                 s->b, offset) > 2)
+        &&  bidir_compute_attributes(embeds, RLE_EMBEDDINGS_SIZE,
+	                             s->b, offset) > 2)
     {
         base = FRIBIDI_TYPE_WL;
         fribidi_analyse_string(embeds, &base, &embedding_max_level);
@@ -4446,6 +4446,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
         ds->style = save_style;
     }
 
+    ds->eol_style = ds->style;
 #if 1
     /* colorize regions */
     if (s->bools.get.hl_current_line
@@ -4469,6 +4470,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 eb_get_pos(s->b, &line, &start_char, start_offset);
                 if (end_offset >= offset0) {
                     end_char = colored_nb_chars;
+		    ds->eol_style = s->region_style;
 		} else {
                     eb_get_pos(s->b, &line, &end_char, end_offset);
 		}
@@ -4476,8 +4478,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 for (i = start_char; i < end_char; i++) {
                     sbuf[i] = s->region_style;
                 }
-		if (start_char == end_char)
-		    ds->last_style = s->region_style;
             }
         } else if (s->bools.get.hl_current_line &&
 	           s->offset >= offset &&
@@ -4485,7 +4485,7 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             /* XXX: only if qs->active_window == s ? */
             for (i = 0; i < colored_nb_chars; i++)
                 sbuf[i] = QE_STYLE_CURRENT_LINE;
-	    ds->last_style = QE_STYLE_CURRENT_LINE;
+	    ds->eol_style = QE_STYLE_CURRENT_LINE;
         }
     }
 #endif
