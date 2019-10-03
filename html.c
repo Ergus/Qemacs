@@ -269,7 +269,7 @@ static void html_display(EditState *s)
 
 
         /* selection handling */
-        if (s->show_selection || s->region_style) {
+        if (s->region_style) {
             sel_start = s->b->mark;
             sel_end = s->offset;
             /* sort selection */
