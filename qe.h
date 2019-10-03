@@ -1470,13 +1470,19 @@ struct EditState {
     int x1, y1, x2, y2;         /* window coordinates in device units */
     //int xx1, yy1, xx2, yy2;     /* window coordinates in 1/1000 */
 
-    int flags; /* display flags */
-#define WF_POPUP      0x0001 /* popup window (with borders) */
-#define WF_MODELINE   0x0002 /* mode line must be displayed */
-#define WF_RSEPARATOR 0x0004 /* right window separator */
-#define WF_POPLEFT    0x0008 /* left side window */
-#define WF_HIDDEN     0x0010 /* hidden window, used for temporary changes */
-#define WF_MINIBUF    0x0020 /* true if single line editing */
+    unsigned int flags; /* display flags */
+#define WF_TOP    0x0001 /* Top Border */
+#define WF_BOTTOM 0x0002 /* Down Border */
+#define WF_LEFT   0x0004 /* Left Border */
+#define WF_RIGHT  0x0008 /* Right Border */
+
+/* popup window (with all borders) */
+#define WF_POPUP      (WF_TOP | WF_DOWN | WF_LEFT | WF_RIGHT)
+#define WF_MODELINE   0x0020 /* mode line must be displayed */
+#define WF_RSEPARATOR 0x0040 /* right window separator */
+#define WF_POPLEFT    0x0080 /* left side window */
+#define WF_HIDDEN     0x0100 /* hidden window, used for temporary changes */
+#define WF_MINIBUF    0x0200 /* true if single line editing */
 #define WF_FILELIST   0x1000 /* window is interactive file list */
 
     OWNED char *prompt;  /* optional window prompt, utf8 */
