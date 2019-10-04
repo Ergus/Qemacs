@@ -2893,9 +2893,14 @@ void display_mode_line(EditState *s)
         out = buf_init(&outbuf, buf, sizeof(buf));
         s->mode->get_mode_line(s, out);
         if (!strequal(buf, s->modeline_shadow)) {
+	    enum QEStyle style = QE_STYLE_MODE_LINE;
+
+	    if (s->qe_state->active_window == s)
+		style = QE_STYLE_ACTIVE_MODE_LINE;
+
             print_at_byte(s->screen, s->xleft, y, s->width,
                           s->qe_state->mode_line_height,
-                          buf, QE_STYLE_MODE_LINE);
+                          buf, style);
             pstrcpy(s->modeline_shadow, sizeof(s->modeline_shadow), buf);
         }
     }
@@ -6892,7 +6897,13 @@ EditState *find_window(EditState *s, int key, EditState *def)
 
 void do_find_window(EditState *s, int key)
 {
+    EditState *init= s;
     s->qe_state->active_window = find_window(s, key, s);
+
+    if (init != s->qe_state->active_window) {
+	do_refresh(init);
+	do_refresh(s);
+    }
 }
 #endif
 
@@ -7936,12 +7947,18 @@ void do_refresh_complete(EditState *s)
 void do_other_window(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
-    EditState *e;
+    EditState *init = s;
 
-    e = s->next_window;
+    EditState *e = s->next_window;
     if (!e)
         e = qs->first_window;
+
     qs->active_window = e;
+
+    if (init != e) {
+	do_refresh(init);
+	do_refresh(e);
+    }
 }
 
 void do_previous_window(EditState *s)

@@ -5,7 +5,10 @@
 
     /* system styles */
     STYLE_DEF(QE_STYLE_MODE_LINE, "mode-line",
-              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
+              QERGB(0xff, 0xff, 0xff), QERGB(0xf, 0xf, 0xf),
+              0, 0, 0)
+    STYLE_DEF(QE_STYLE_ACTIVE_MODE_LINE, "mode-line",
+              QERGB(0xff, 0xff, 0xff), QERGB(0x00, 0x00, 0xff),
               0, 0, 0)
     STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border",
               QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
