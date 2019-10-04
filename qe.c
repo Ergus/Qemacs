@@ -7895,8 +7895,7 @@ void do_refresh(EditState *s1)
                 e->y1 = content_height;
                 e->x2 = width;
                 e->y2 = height;
-            } else
-            if (qs->height == 0 || qs->width == 0 || qs->content_height == 0) {
+            } else if (qs->height == 0 || qs->width == 0 || qs->content_height == 0) {
                 /* needed only to init the window size for the first time */
                 e->x1 = 0;
                 e->y1 = 0;
