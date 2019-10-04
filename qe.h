@@ -1486,7 +1486,10 @@ struct EditState {
 #define WF_FILELIST   0x1000 /* window is interactive file list */
 
     OWNED char *prompt;  /* optional window prompt, utf8 */
-    OWNED char *caption;  /* optional window caption or title, utf8 */
+    OWNED struct {
+	char *text;  /* optional window caption or title, utf8 */
+	uint flags;     /* flags for position */
+    } caption;
     //const char *mode_line;
     //const char *title;
     struct QEmacsState *qe_state;

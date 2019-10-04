@@ -2923,24 +2923,30 @@ void display_window_borders(EditState *e)
             color = qe_styles[QE_STYLE_WINDOW_BORDER].bg_color;
             if (e->flags & WF_POPUP) {
                 /* XXX: should use client area instead of recomputing it */
-                int top_h = e->caption ? qs->mode_line_height : qs->border_width;
-                int bottom_h = qs->border_width;
-                int left_w = qs->border_width;
-                int right_w = qs->border_width;
+		int top_h = 0, bottom_h = 0, left_w = 0, right_w = 0;
 
-		if (e->flags & WF_TOP)
+		if (e->flags & WF_TOP) {
+		    top_h = e->caption.text ? qs->mode_line_height : qs->border_width;
 		    fill_rectangle(qs->screen, x, y, width, top_h, color);
-		if (e->flags & WF_LEFT)
-		    fill_rectangle(qs->screen, x, y + bottom_h,
-		                   left_w, height - top_h - bottom_h, color);
-		if (e->flags & WF_RIGHT)
-		    fill_rectangle(qs->screen, x + width - right_w, y + top_h,
-		                   right_w, height - top_h - bottom_h, color);
-		if (e->flags & WF_BOTTOM)
+		}
+		if (e->flags & WF_BOTTOM) {
+		    bottom_h = qs->border_width;
 		    fill_rectangle(qs->screen, x, y + height - bottom_h,
 		                   width, bottom_h, color);
+		}
+		if (e->flags & WF_LEFT) {
+		    left_w = qs->border_width;
+		    fill_rectangle(qs->screen, x, y + bottom_h,
+		                   left_w, height - top_h - bottom_h, color);
+		}
+		if (e->flags & WF_RIGHT) {
+		    right_w = qs->border_width;
+		    fill_rectangle(qs->screen, x + width - right_w, y + top_h,
+		                   right_w, height - top_h - bottom_h, color);
+		}
+
                 /* display caption */
-                if (e->caption) {
+                if (e->caption.text) {
                     QEStyleDef styledef;
                     QECharMetrics metrics;
                     QEFont *font;
@@ -2948,9 +2954,9 @@ void display_window_borders(EditState *e)
                     int len;
 
                     /* XXX: Should convert from UTF-8? */
-                    for (len = 0; len < 256 && e->caption[len]; len++) {
-                        buf[len] = e->caption[len];
-                    }
+                    for (len = 0; len < 256 && e->caption.text[len]; len++)
+                        buf[len] = e->caption.text[len];
+
                     get_style(e, &styledef, QE_STYLE_WINDOW_BORDER);
                     font = select_font(qs->screen,
                                        styledef.font_style, styledef.font_size);
@@ -5982,7 +5988,7 @@ static void compute_client_area(EditState *s)
 	if (s->flags & WF_RIGHT)
 	    x2 -= qs->border_width;
 	if (s->flags & WF_TOP)
-	    y1 += s->caption ? qs->mode_line_height : qs->border_width;
+	    y1 += s->caption.text ? qs->mode_line_height : qs->border_width;
 	if (s->flags & WF_BOTTOM)
 	    y2 -= qs->border_width;
     }
@@ -6056,7 +6062,7 @@ void edit_close(EditState **sp)
         /* closing the window mode should have freed it already */
         qe_free_mode_data(s->mode_data);
         qe_free(&s->prompt);
-        qe_free(&s->caption);
+        qe_free(&s->caption.text);
         qe_free(&s->line_shadow);
         s->shadow_nb_lines = 0;
         qe_free(sp);
@@ -6388,7 +6394,7 @@ void do_minibuffer_complete(EditState *s, int type)
                 h = h1 / 4;
                 e = edit_new(b, (w1 - w) / 2, (h1 - h), w, h, (WF_TOP | WF_LEFT | WF_RIGHT));
                 snprintf(buf, sizeof buf, "Select a %s:", mb->completion->name);
-                e->caption = qe_strdup(buf);
+                e->caption.text = qe_strdup(buf);
                 e->target_window = s;
                 mb->completion_popup_window = e;
                 do_refresh(e);
@@ -6807,7 +6813,7 @@ EditState *show_popup(EditState *s, EditBuffer *b, const char *caption)
     b->default_mode = &popup_mode;
     e = edit_new(b, (w1 - w) / 2, (h1 - h) / 2, w, h, WF_POPUP);
     if (caption)
-        e->caption = qe_strdup(caption);
+        e->caption.text = qe_strdup(caption);
     /* XXX: should come from mode.default_wrap */
     e->wrap = WRAP_TRUNCATE;
     e->target_window = s;

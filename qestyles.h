@@ -1,6 +1,6 @@
     /* root style, must be complete */
     STYLE_DEF(QE_STYLE_DEFAULT, "default",
-              QERGB(0xf8, 0xd8, 0xb0), QERGB(0x00, 0x00, 0x00),
+              QERGB(0xff, 0xff, 0xff), QERGB(0x00, 0x00, 0x00),
               QE_FONT_FAMILY_FIXED, 10, 0)
 
     /* system styles */
