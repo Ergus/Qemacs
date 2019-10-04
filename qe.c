@@ -4669,11 +4669,9 @@ static void generic_text_display(EditState *s)
         x1 = xc - s->x_disp[m->basec];
         if (x1 >= 0 && x1 < ds->width - ds->eol_width) {
             s->x_disp[m->basec] = 0;
-        } else
-        if (xc < 0) {
+        } else if (xc < 0) {
             s->x_disp[m->basec] -= xc;
-        } else
-        if (xc >= ds->width) {
+        } else if (xc >= ds->width) {
             s->x_disp[m->basec] += ds->width - xc - ds->eol_width;
         }
 #endif
@@ -5589,8 +5587,7 @@ static void qe_key_process(int key)
     if (key == KEY_ESC) {
         c->is_escape = 1;
         goto next;
-    } else
-    if (c->is_escape) {
+    } else if (c->is_escape) {
         compose_keys(c->keys, &c->nb_keys);
         c->is_escape = 0;
         key = c->keys[c->nb_keys - 1];
@@ -6383,6 +6380,7 @@ void do_minibuffer_complete(EditState *s, int type)
 
                 b = eb_new("*completion*",
                            BF_SYSTEM | BF_UTF8 | BF_TRANSIENT | BF_STYLE1);
+
                 b->default_mode = &list_mode;
                 w1 = qs->screen->width;
                 h1 = qs->screen->height - qs->status_height;
