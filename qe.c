@@ -5980,10 +5980,14 @@ static void compute_client_area(EditState *s)
     if (s->flags & WF_MODELINE)
         y2 -= qs->mode_line_height;
     if (s->flags & WF_POPUP) {
-        x1 += qs->border_width;
-        x2 -= qs->border_width;
-        y1 += s->caption ? qs->mode_line_height : qs->border_width;
-        y2 -= qs->border_width;
+	if (s->flags & WF_LEFT)
+	    x1 += qs->border_width;
+	if (s->flags & WF_RIGHT)
+	    x2 -= qs->border_width;
+	if (s->flags & WF_TOP)
+	    y1 += s->caption ? qs->mode_line_height : qs->border_width;
+	if (s->flags & WF_BOTTOM)
+	    y2 -= qs->border_width;
     }
     if (s->flags & WF_RSEPARATOR)
         x2 -= qs->separator_width;
