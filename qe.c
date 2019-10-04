@@ -2936,17 +2936,23 @@ void display_window_borders(EditState *e)
 		}
 		if (e->flags & WF_BOTTOM) {
 		    bottom_h = qs->border_width;
-		    fill_rectangle(qs->screen, x, y + height - bottom_h,
+		    fill_rectangle(qs->screen,
+		                   x,
+		                   y + height - bottom_h,
 		                   width, bottom_h, color);
 		}
 		if (e->flags & WF_LEFT) {
 		    left_w = qs->border_width;
-		    fill_rectangle(qs->screen, x, y + bottom_h,
+		    fill_rectangle(qs->screen,
+		                   x,
+		                   y + top_h,
 		                   left_w, height - top_h - bottom_h, color);
 		}
 		if (e->flags & WF_RIGHT) {
 		    right_w = qs->border_width;
-		    fill_rectangle(qs->screen, x + width - right_w, y + top_h,
+		    fill_rectangle(qs->screen,
+		                   x + width - right_w,
+		                   y + top_h,
 		                   right_w, height - top_h - bottom_h, color);
 		}
 
