@@ -4420,9 +4420,10 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     if (s->prompt && offset1 == 0) {
         const char *p = s->prompt;
 
-        while (*p) {
+	ds->style = QE_STYLE_MINIBUF;
+        while (*p)
             display_char(ds, -1, -1, utf8_decode(&p));
-        }
+	ds->style = QE_STYLE_DEFAULT;
     }
 
     /* colorize */
@@ -6283,7 +6284,8 @@ typedef struct MinibufState {
 
 static ModeDef minibuffer_mode;
 
-static inline MinibufState *minibuffer_get_state(EditState *e, int status) {
+static inline MinibufState *minibuffer_get_state(EditState *e, int status)
+{
     return qe_get_buffer_mode_data(e->b, &minibuffer_mode, status ? e : NULL);
 }
 
@@ -6700,7 +6702,7 @@ void minibuffer_edit(EditState *e, const char *input, const char *prompt,
     s->target_window = e;
     s->prompt = qe_strdup(prompt);
     s->bools.get.bidir = 0;
-    s->default_style = QE_STYLE_MINIBUF;
+    //s->default_style = QE_STYLE_MINIBUF;
     /* XXX: should come from mode.default_wrap */
     s->wrap = WRAP_TRUNCATE;
 
@@ -7727,7 +7729,8 @@ static void quit_examine_buffers(QuitState *is)
     /* now asks for confirmation or exit directly */
     if (is->modified) {
         minibuffer_edit(qs->active_window,
-                        NULL, "Modified buffers exist; exit anyway? (yes or no) ",
+                        NULL,
+	                "Modified buffers exist; exit anyway? (yes or no) ",
                         NULL, NULL, quit_confirm_cb, NULL);
         edit_display(&qe_state);
         dpy_flush(&global_screen);
