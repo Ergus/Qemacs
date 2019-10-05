@@ -35,6 +35,9 @@ cmake_dependent_option (ENABLE_XV
   "Enable Xvideo extension support" ON "ENABLE_X11" OFF)
 cmake_dependent_option (ENABLE_XSHM
   "Enable XShm extension support" ON "ENABLE_X11" OFF)
+cmake_dependent_option (ENABLE_XFT
+  "Enable Xft extension support" ON "ENABLE_X11" OFF)
+
 cmake_dependent_option (ENABLE_XRENDER
   "Enable Xrender extension support" ON "ENABLE_X11" OFF)
 
@@ -168,6 +171,7 @@ else ()
   if (ENABLE_X11)
     find_package (X11)
     if (X11_FOUND)
+      include_directories ("${X11_INCLUDE_DIR}")
       set (CONFIG_HTML ${ENABLE_HTML})
       set (QE_X11 ${X11_LIBRARIES})
       set (QE_DEFINITION "CONFIG_X11")
@@ -188,6 +192,14 @@ else ()
 	set (QE_X11 ${QE_X11} ${X11_Xrender_LIB})
       endif ()
 
+      if (ENABLE_XFT AND X11_Xft_FOUND)
+	find_package(Freetype QUIET)
+	if (FREETYPE_FOUND)
+	  set(CONFIG_XFT TRUE)
+	  include_directories("${FREETYPE_INCLUDE_DIRS}")
+	  set (QE_X11 ${QE_X11} ${FREETYPE_LIBRARIES})
+	endif ()
+      endif()
     endif ()
     set (SOURCES ${SOURCES} x11.c)
     set (LIBS ${LIBS} ${QE_X11})
