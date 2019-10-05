@@ -96,7 +96,7 @@ higher than 3.0.
 	**CMAKE_INSTALL_PREFIX** (step 4).
 
 	```shell
-	make
+	make install
 	```
 
 ## Documentation
