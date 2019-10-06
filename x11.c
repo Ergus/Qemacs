@@ -98,12 +98,14 @@ static int font_ptsize;
 
 static const char * const default_x11_fonts[NB_FONT_FAMILIES] = {
 #ifdef CONFIG_XFT
-    "mono",
+    "monospace",
+    "sans",
+    "serif"
 #else
     "fixed,unifont",
-#endif
     "times,unifont",
     "helvetica,unifont",
+#endif
 };
 
 #ifdef CONFIG_DOUBLE_BUFFER
@@ -506,37 +508,36 @@ static void x11_dpy_xor_rectangle(QEditScreen *s,
 
 static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
 {
+    QEmacsState *qs = &qe_state;
     X11State *xs = s->priv_data;
-    const char *family;
     int weight, slant;
-    XftFont *renderFont;
-    QEFont *font;
+    XftFont *renderFont = NULL;
+    QEFont *font = qe_mallocz(QEFont);
+    const char *family_list;
 
-    font = qe_mallocz(QEFont);
+
     if (!font)
         return NULL;
 
-    switch (style & QE_FONT_FAMILY_MASK) {
-    default:
-    case QE_FONT_FAMILY_FIXED:
-        family = "mono";
-        break;
-    case QE_FONT_FAMILY_SANS:
-        family = "sans";
-        break;
-    case QE_FONT_FAMILY_SERIF:
-        family = "serif";
-        break;
-    }
-    weight = XFT_WEIGHT_MEDIUM;
-    if (style & QE_FONT_STYLE_BOLD)
-        weight = XFT_WEIGHT_BOLD;
-    slant = XFT_SLANT_ROMAN;
-    if (style & QE_FONT_STYLE_ITALIC)
-        slant = XFT_SLANT_ITALIC;
+    unsigned int font_index
+	= ((style & QE_FONT_FAMILY_MASK) >> QE_FONT_FAMILY_SHIFT) - 1;
+
+    if (font_index >= NB_FONT_FAMILIES)
+        font_index = 0; /* mono font is default */
+
+    family_list = qs->system_fonts[font_index];
+
+    if (family_list[0] == '\0')
+        family_list = default_x11_fonts[font_index];
+
+    weight = (style & QE_FONT_STYLE_BOLD)
+	? XFT_WEIGHT_BOLD : XFT_WEIGHT_MEDIUM;
+
+    slant =  (style & QE_FONT_STYLE_ITALIC)
+        ? XFT_SLANT_ITALIC : XFT_SLANT_ROMAN;
 
     renderFont = XftFontOpen(xs->display, xs->xscreen,
-                             XFT_FAMILY, XftTypeString, family,
+                             XFT_FAMILY, XftTypeString, family_list,
                              XFT_SIZE, XftTypeInteger, size,
                              XFT_WEIGHT, XftTypeInteger, weight,
                              XFT_SLANT, XftTypeInteger, slant,
@@ -546,6 +547,7 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
         qe_free(&font);
         return NULL;
     }
+
     font->ascent = renderFont->ascent;
     font->descent = renderFont->descent;
     font->priv_data = renderFont;
