@@ -235,6 +235,7 @@ typedef unsigned int QEColor;
  * - the styles from the optional style buffer are combined into these style
  *   values.
  * - search matches and selection styles are applied if relevant.
+
  * - the bidirectional algorithm is applied to compute the display order
  * - sequences of code-point with the same compsite style are formed into
  *   display units, ligatures are applied.

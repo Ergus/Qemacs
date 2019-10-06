@@ -139,17 +139,14 @@ static inline int rect_dist(CSSRect *r1, CSSRect *r2)
 
 static void update_rect(X11State *xs, int x1, int y1, int x2, int y2)
 {
-    CSSRect r, *r1, *r2;
-    int i, d, dmin;
+    CSSRect r, *r1 = NULL, *r2 = xs->update_rects;
+    int i, d, dmi = INT_MAXn;
 
     css_set_rect(&r, x1, y1, x2, y2);
     if (css_is_null_rect(&r))
         return;
 
     /* find closest rectangle */
-    dmin = INT_MAX;
-    r2 = xs->update_rects;
-    r1 = NULL;
     for (i = 0; i < xs->update_nb; i++) {
         d = rect_dist(r2, &r);
         if (d < dmin) {
@@ -166,13 +163,13 @@ static void update_rect(X11State *xs, int x1, int y1, int x2, int y2)
     }
 }
 
-#else
+#else // CONFIG_DOUBLE_BUFFER
 static inline void update_rect(X11State *xs,
                                qe__unused__ int x1, qe__unused__ int y1,
                                qe__unused__ int x2, qe__unused__ int y2)
 {
 }
-#endif
+#endif // CONFIG_DOUBLE_BUFFER
 
 static int x11_dpy_probe(void)
 {
@@ -223,8 +220,7 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
     if (font_ptsize)
         qe_styles[0].font_size = font_ptsize;
     get_style(NULL, &default_style, 0);
-    font = x11_dpy_open_font(s, default_style.font_style,
-                          default_style.font_size);
+    font = x11_dpy_open_font(s, default_style.font_style, default_style.font_size);
     if (!font) {
         fprintf(stderr, "Could not open default font\n");
         exit(1);
@@ -289,7 +285,6 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
                            None, NULL, 0, &hint);
 
     /* Map window. */
-
     XMapWindow(xs->display, xs->window);
 
     /* Wait for map. */
@@ -308,13 +303,12 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
     /* see if we can bypass the X color functions */
     xs->visual_depth = 0;
     if (xs->attr.visual->class == TrueColor) {
-        XVisualInfo *vinfo, templ;
+	XVisualInfo templ;
         int n;
         templ.visualid = xs->attr.visual->visualid;
-        vinfo = XGetVisualInfo(xs->display, VisualIDMask, &templ, &n);
-        if (vinfo) {
+        XVisualInfo *vinfo = XGetVisualInfo(xs->display, VisualIDMask, &templ, &n);
+        if (vinfo)
             xs->visual_depth = vinfo->depth;
-        }
     }
 
     xs->xim = XOpenIM(xs->display, NULL, NULL, NULL);
@@ -331,7 +325,7 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
 #ifdef CONFIG_XFT
     xs->renderDraw = XftDrawCreate(xs->display, xs->window, xs->attr.visual,
                                    DefaultColormap(xs->display, xs->xscreen));
-#endif
+#endif // CONFIG_XFT
     /* double buffer handling */
     xs->gc_pixmap = XCreateGC(xs->display, xs->window, 0, NULL);
     gc_val.graphics_exposures = 0;
@@ -342,9 +336,9 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
     /* erase pixmap */
     XFillRectangle(xs->display, xs->dbuffer, xs->gc, 0, 0, xsize, ysize);
     update_reset(xs);
-#else
+#else // CONFIG_DOUBLE_BUFFER
     xs->dbuffer = xs->window;
-#endif
+#endif // CONFIG_DOUBLE_BUFFER
 
 #ifdef CONFIG_XSHM
     /* shm extension usable ? */
@@ -355,7 +349,7 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
     /* Check if display is local and XShm available */
     if ((*p == ':') && XShmQueryExtension(xs->display))
         xs->shm_use = 1;
-#endif
+#endif // CONFIG_XSHM
 
     /* compute bitmap format */
     switch (xs->visual_depth) {
@@ -377,7 +371,7 @@ static int x11_dpy_init(QEditScreen *s, int w, int h)
 
 #ifdef CONFIG_XV
     xv_init(s);
-#endif
+#endif //  CONFIG_XV
     fd = ConnectionNumber(xs->display);
     set_read_handler(fd, x11_handle_event, s);
     return 0;
@@ -423,7 +417,7 @@ static void xv_init(QEditScreen *s)
                (fo->id >> 16) & 0xff,
                (fo->id >> 24) & 0xff,
                (fo->format == XvPacked) ? "packed" : "planar");
-#endif
+#endif // 0
         /* search YUV420P format */
         if (fo->id == 0x32315659 && fo->format == XvPlanar) {
             xs->xv_format = fo->id;
@@ -438,7 +432,7 @@ static void xv_init(QEditScreen *s)
         s->video_format = QEBITMAP_FORMAT_YUV420P;
     }
 }
-#endif
+#endif // CONFIG_XV
 
 static void x11_dpy_close(QEditScreen *s)
 {
@@ -446,7 +440,7 @@ static void x11_dpy_close(QEditScreen *s)
 
 #ifdef CONFIG_DOUBLE_BUFFER
     XFreePixmap(xs->display, xs->dbuffer);
-#endif
+#endif // CONFIG_DOUBLE_BUFFER
     XCloseDisplay(xs->display);
     qe_free(&s->priv_data);
 }
@@ -467,57 +461,32 @@ static int x11_term_resize(QEditScreen *s, int w, int h)
         XFreePixmap(xs->display, xs->dbuffer);
         xs->dbuffer = XCreatePixmap(xs->display, xs->window, w, h, xs->attr.depth);
     }
-#endif
+#endif // CONFIG_DOUBLE_BUFFER
     return 1;
-}
-
-static unsigned long get_x11_color(X11State *xs, QEColor color)
-{
-    unsigned int r = (color >> 16) & 0xff;
-    unsigned int g = (color >>  8) & 0xff;
-    unsigned int b = (color >>  0) & 0xff;
-    XColor col;
-
-    switch (xs->visual_depth) {
-    case 15:
-        return ((((r) >> 3) << 10) | (((g) >> 3) << 5) | ((b) >> 3));
-    case 16:
-        return ((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3));
-    case 24:
-    case 32:
-        return (r << 16) | (g << 8) | b;
-    default:
-        /* NOTE: the color is never freed */
-        /* XXX: should do allocation ourself ? */
-        col.red = r << 8;
-        col.green = g << 8;
-        col.blue = b << 8;
-        XAllocColor(xs->display, xs->attr.colormap, &col);
-        return col.pixel;
-    }
 }
 
 /* Print the unicode string 'str' with baseline at position (x,y). The
    higher bits of each char may contain attributes. */
 #ifdef CONFIG_XFT
+static void get_xft_color(X11State *xs, QEColor in, XftColor *out)
+{
+    const int a = QERGB_ALPHA (in) << 8;
+    const int r = QERGB_RED(in) << 8;
+    const int g = QERGB_GREEN(in) << 8;
+    const int b = QERGB_BLUE(in) << 8;
+    XRenderColor render_color = { .red = r, .green = g, .blue = b, .alpha = a };
+
+    XftColorAllocValue(xs->display, xs->attr.visual, xs->attr.colormap, &render_color, out);
+}
+
 
 static void x11_dpy_fill_rectangle(QEditScreen *s,
                                    int x1, int y1, int w, int h, QEColor color)
 {
     X11State *xs = s->priv_data;
     XftColor col;
-    int r, g, b, a;
 
-    a = (color >> 24) & 0xff;
-    r = (color >> 16) & 0xff;
-    g = (color >>  8) & 0xff;
-    b = (color >>  0) & 0xff;
-    /* not exact, but faster */
-    col.color.red = r << 8;
-    col.color.green = g << 8;
-    col.color.blue = b << 8;
-    col.color.alpha = a << 8;
-    col.pixel = get_x11_color(xs, color);
+    get_xft_color(xs, color, &col);
     XftDrawRect(xs->renderDraw, &col, x1, y1, w, h);
 }
 
@@ -525,12 +494,13 @@ static void x11_dpy_xor_rectangle(QEditScreen *s,
                                   int x1, int y1, int w, int h, QEColor color)
 {
     X11State *xs = s->priv_data;
-    unsigned long fg;
+    XftColor col;
+    int fg = WhitePixel(xs->display, xs->xscreen);
+    get_xft_color(xs, color, &col);
 
-    fg = get_x11_color(xs, QE_RGB(255, 255, 255));
     XSetForeground(xs->display, xs->gc, fg);
     XSetFunction(xs->display, xs->gc, GXxor);
-    XFillRectangle(xs->display, xs->dbuffer, xs->gc, x1, y1, w, h);
+    XftDrawRect(xs->renderDraw, &col, x1, y1, w, h);
     XSetFunction(xs->display, xs->gc, GXcopy);
 }
 
@@ -549,7 +519,7 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
     switch (style & QE_FONT_FAMILY_MASK) {
     default:
     case QE_FONT_FAMILY_FIXED:
-        family = font_family_str;
+        family = "mono";
         break;
     case QE_FONT_FAMILY_SANS:
         family = "sans";
@@ -570,7 +540,7 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
                              XFT_SIZE, XftTypeInteger, size,
                              XFT_WEIGHT, XftTypeInteger, weight,
                              XFT_SLANT, XftTypeInteger, slant,
-                             0);
+                             NULL);
     if (!renderFont) {
         /* CG: don't know if this can happen, should try fallback? */
         qe_free(&font);
@@ -585,9 +555,9 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
 static void x11_dpy_close_font(QEditScreen *s, QEFont **fontp)
 {
     X11State *xs = s->priv_data;
-    QEFont *font = *fontp;
 
-    if (font) {
+    if (*fontp) {
+	QEFont *font = *fontp;
         XftFont *renderFont = font->priv_data;
 
         XftFontClose(xs->display, renderFont);
@@ -599,15 +569,21 @@ static void x11_dpy_close_font(QEditScreen *s, QEFont **fontp)
     }
 }
 
-static int x11_term_glyph_width(QEditScreen *s, QEFont *font, unsigned int cc)
+static void x11_dpy_text_metrics(QEditScreen *s, QEFont *font,
+                                 QECharMetrics *metrics,
+                                 const unsigned int *str, int len)
 {
     X11State *xs = s->priv_data;
     XftFont *renderFont = font->priv_data;
     XGlyphInfo gi;
 
-    XftTextExtents32(xs->display, renderFont, &cc, 1, &gi);
-    return gi.xOff;
+    metrics->font_ascent = font->ascent;
+    metrics->font_descent = font->descent;
+
+    XftTextExtents32(xs->display, renderFont, str, len, &gi);
+    metrics->width = gi.xOff;
 }
+
 
 static void x11_dpy_draw_text(QEditScreen *s, QEFont *font,
                               int x, int y, const unsigned int *str, int len,
@@ -616,34 +592,40 @@ static void x11_dpy_draw_text(QEditScreen *s, QEFont *font,
     X11State *xs = s->priv_data;
     XftFont *renderFont = font->priv_data;
     XftColor col;
-    int a = (color >> 24) & 0xff;
-    int r = (color >> 16) & 0xff;
-    int g = (color >>  8) & 0xff;
-    int b = (color >>  0) & 0xff;
 
-    /* not exact, but faster */
-    col.color.red = r << 8;
-    col.color.green = g << 8;
-    col.color.blue = b << 8;
-    col.color.alpha = a << 8;
-    col.pixel = get_x11_color(xs, color);
+    get_xft_color(xs, color, &col);
 
     XftDrawString32(xs->renderDraw, &col, renderFont, x, y,
                     (XftChar32 *)str, len);
 }
 
-#else
+#else  // CONFIG_XFT
+
+static void get_x11_color(X11State *xs, QEColor in, XColor *out)
+{
+    const int r = QERGB_RED(in);
+    const int g = QERGB_GREEN(in);
+    const int b = QERGB_BLUE(in);
+
+    out->red = r << 8;
+    out->green = g << 8;
+    out->blue = b << 8;
+    XAllocColor(xs->display, xs->attr.colormap, out);
+}
+
+
 
 static void x11_dpy_fill_rectangle(QEditScreen *s,
-                                   int x1, int y1, int w, int h, QEColor color)
+                                   int x1, int y1, int w, int h,
+                                   QEColor color)
 {
     X11State *xs = s->priv_data;
-    unsigned long xcolor;
+    XColor xcolor;
 
     update_rect(xs, x1, y1, x1 + w, y1 + h);
 
-    xcolor = get_x11_color(xs, color);
-    XSetForeground(xs->display, xs->gc, xcolor);
+    get_x11_color(xs, color, &xcolor);
+    XSetForeground(xs->display, xs->gc, xcolor.pixel);
     XFillRectangle(xs->display, xs->dbuffer, xs->gc, x1, y1, w, h);
 }
 
@@ -743,7 +725,7 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
     }
     if (i == 2)
         goto fail;
-#else
+#else // 0
     /* note: we do not want the X server to scale the font (usually
        ugly result), so we do not ask a given size */
     snprintf(buf, sizeof(buf),
@@ -752,7 +734,7 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
     list = XListFonts(xs->display, buf, 256, &count);
     if (count == 0)
         goto fail;
-#endif
+#endif // 0
     /* iterate thru each font and select closer one */
     found = 0;
     dist_min = INT_MAX;
@@ -937,25 +919,23 @@ static void x11_dpy_draw_text(QEditScreen *s, QEFont *font,
 {
     X11State *xs = s->priv_data;
     XFontStruct *xfont;
-    QEFont *font1, *last_font;
+    QEFont *font1, *last_font =  font;
     XCharStruct *cs;
 #ifdef __GNUC__
     XChar2b x11_str[len];
 #else
     XChar2b x11_str[LINE_MAX_SIZE];
 #endif
-    XChar2b *q;
-    int i, l, x, x_start;
+    XChar2b *q = x11_str;
+    int i = 0, l, x, x_start;
     unsigned int cc;
-    unsigned long xcolor;
+    XColor xcolor;
+    get_x11_color(xs, color, &xcolor);;
 
-    xcolor = get_x11_color(xs, color);
-    XSetForeground(xs->display, xs->gc, xcolor);
-    q = x11_str;
-    i = 0;
+    XSetForeground(xs->display, xs->gc, xcolor.pixel);
     x = x1;
     x_start = x;
-    last_font = font;
+
     while (i < len) {
         cc = str[i++];
         cs = get_char_struct(font, cc);
@@ -1014,7 +994,7 @@ static void x11_dpy_draw_text(QEditScreen *s, QEFont *font,
         }
     }
 }
-#endif
+#endif // CONFIG_XFT
 
 static void x11_dpy_set_clip(QEditScreen *s, int x, int y, int w, int h)
 {
