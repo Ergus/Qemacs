@@ -738,14 +738,35 @@ static void tty_read_handler(void *opaque)
         if (ts->mouse.type == QE_KEY_EVENT) {  // Key
 	    const int but_or_release = ch & 3;
 
-	    if (but_or_release == 3)
-		ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
-	    else {
-		ts->mouse.button = (1 << but_or_release);
+	    if (ch & 32) {
 		ts->mouse.type = QE_BUTTON_PRESS_EVENT;
-	    }
+		if (ch & 64) {
+		    switch (but_or_release) {
+		    case 0:
+			ts->mouse.button = QE_WHEEL_UP;
+			break;
+		    case 1:
+			ts->mouse.button = QE_WHEEL_DOWN;
+			break;
+		    }
+		} else {
+		    switch (but_or_release) {
+		    case 0:
+			ts->mouse.button = QE_BUTTON_LEFT;
+			break;
+		    case 1:
+			ts->mouse.button = QE_BUTTON_MIDDLE;
+			break;
+		    case 2:
+			ts->mouse.button = QE_BUTTON_RIGHT;
+			break;
+		    case 3:
+			ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
+			break;
 
-	    if (ch & 64) // If this is a movement, not a click
+		    }
+		}
+	    } else if (ch & 64) // If this is a movement, not a click
 		ts->mouse.type = QE_MOTION_EVENT;
 
         } else { // Position
