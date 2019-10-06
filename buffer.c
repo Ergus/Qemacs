@@ -1655,7 +1655,7 @@ int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset)
 
     p = b->page_table;
     p_end = p + b->nb_pages;
-    for (;;) {
+    while (1) {
         if (p >= p_end)
             goto the_end;
         if (offset < p->size)
@@ -1914,7 +1914,7 @@ int eb_raw_buffer_load1(EditBuffer *b, FILE *f, int offset)
 
     //put_status(NULL, "loading %s", filename);
     size = inserted = 0;
-    for (;;) {
+    while (1) {
         len = fread(buf, 1, IOBUF_SIZE, f);
         if (len <= 0) {
             if (ferror(f))
@@ -2293,7 +2293,7 @@ void eb_line_pad(EditBuffer *b, int n)
 
     i = 0;
     offset = b->total_size;
-    for (;;) {
+    while (1) {
         if (eb_prevc(b, offset, &offset) == '\n')
             break;
         i++;
@@ -2413,7 +2413,7 @@ int eb_get_line(EditBuffer *b, unsigned int *buf, int size,
     int c, len = 0;
 
     if (size > 0) {
-        for (;;) {
+        while (1) {
             if (len + 1 >= size) {
                 buf[len] = '\0';
                 break;
@@ -2445,7 +2445,7 @@ int eb_fgets(EditBuffer *b, char *buf, int buf_size,
     buf_t outbuf, *out;
 
     out = buf_init(&outbuf, buf, buf_size);
-    for (;;) {
+    while (1) {
         int next;
         int c = eb_nextc(b, offset, &next);
         if (!buf_putc_utf8(out, c)) {
@@ -2483,7 +2483,7 @@ int eb_goto_bol(EditBuffer *b, int offset)
 {
     int offset1;
 
-    for (;;) {
+    while (1) {
         if (eb_prevc(b, offset, &offset1) == '\n')
             break;
         offset = offset1;
@@ -2541,7 +2541,7 @@ int eb_goto_eol(EditBuffer *b, int offset1)
 {
     int c, offset;
 
-    for (;;) {
+    while (1) {
         offset = offset1;
         c = eb_nextc(b, offset, &offset1);
         if (c == '\n')
@@ -2554,7 +2554,7 @@ int eb_next_line(EditBuffer *b, int offset)
 {
     int c;
 
-    for (;;) {
+    while (1) {
         c = eb_nextc(b, offset, &offset);
         if (c == '\n')
             break;
