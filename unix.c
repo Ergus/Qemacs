@@ -316,7 +316,7 @@ void url_main_loop(void (*init)(void *opaque), void *opaque)
 {
     url_block_reset();
     (*init)(opaque);
-    for (;;) {
+    while (1) {
         if (url_exit_request)
             break;
         url_block();

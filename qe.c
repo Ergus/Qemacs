@@ -642,7 +642,7 @@ void word_right(EditState *s, int w)
 {
     int c, offset1;
 
-    for (;;) {
+    while (1) {
         if (s->offset >= s->b->total_size)
             break;
         c = eb_nextc(s->b, s->offset, &offset1);
@@ -656,7 +656,7 @@ void word_left(EditState *s, int w)
 {
     int c, offset1;
 
-    for (;;) {
+    while (1) {
         if (s->offset == 0)
             break;
         c = eb_prevc(s->b, s->offset, &offset1);
@@ -729,7 +729,7 @@ int eb_next_paragraph(EditBuffer *b, int offset)
     offset = eb_goto_bol(b, offset);
     /* find end of paragraph */
     text_found = 0;
-    for (;;) {
+    while (1) {
         if (offset >= b->total_size)
             break;
         if (eb_is_blank_line(b, offset, NULL)) {
@@ -745,7 +745,7 @@ int eb_next_paragraph(EditBuffer *b, int offset)
 
 int eb_start_paragraph(EditBuffer *b, int offset)
 {
-    for (;;) {
+    while (1) {
         offset = eb_goto_bol(b, offset);
         if (offset <= 0)
             break;
@@ -772,7 +772,7 @@ void do_backward_paragraph(EditState *s)
 
     offset = s->offset;
     /* skip empty lines */
-    for (;;) {
+    while (1) {
         if (offset <= 0)
             break;
         offset = eb_goto_bol(s->b, offset);
@@ -952,7 +952,7 @@ void do_changecase_region(EditState *s, int arg)
        it is not so simple ! */
     /* XXX: if last char of region changes width, offset will move */
     offset = min(s->offset, s->b->mark);
-    for (;;) {
+    while (1) {
         if (offset >= max(s->offset, s->b->mark))
               break;
         if (eb_changecase(s->b, &offset, arg)) {
@@ -1452,7 +1452,7 @@ void text_move_left_right_visual(EditState *s, int dir)
     yc = cm.linec;
 
     nextline = 0;
-    for (;;) {
+    while (1) {
         /* find cursor offset */
         m->yd = yc;
         if (!nextline) {
@@ -1621,7 +1621,7 @@ void do_char(EditState *s, int key, int argval)
     /* Delete hilighted region */
     do_delete_selection(s);
 
-    for (;;) {
+    while (1) {
         if (s->mode->write_char)
             s->mode->write_char(s, key);
         if (argval-- <= 1)
@@ -1693,7 +1693,7 @@ void text_write_char(EditState *s, int key)
 
         s->compose_buf[s->compose_len++] = key;
         m = s->input_method;
-        for (;;) {
+        while (1) {
             if (!m) {
                 s->compose_len = 0;
                 break;
@@ -1990,7 +1990,7 @@ void do_kill_line(EditState *s, int argval)
     if (argval <= 0) {
         /* kill backwards */
         dir = -1;
-        for (;;) {
+        while (1) {
             do_bol(s);
             p2 = s->offset;
             if (p2 <= 0 || argval == 0)
@@ -2000,7 +2000,7 @@ void do_kill_line(EditState *s, int argval)
             argval += 1;
         }
     } else {
-        for (;;) {
+        while (1) {
             do_eol(s);
             p2 = s->offset;
             if (p2 >= s->b->total_size || argval == 0)
@@ -4110,7 +4110,7 @@ static int bidir_compute_attributes(TypeLink *list_tab, int max_size,
 
     ltype = FRIBIDI_TYPE_SOT;
 
-    for (;;) {
+    while (1) {
         offset1 = offset;
         c = eb_nextc(b, offset, &offset);
         if (c == '\n')
@@ -4153,7 +4153,7 @@ static int get_staticly_colorized_line(EditState *s, unsigned int *buf, int buf_
 
     buf_ptr = buf;
     buf_end = buf + buf_size - 1;
-    for (;;) {
+    while (1) {
         QETermStyle style = eb_get_style(b, offset);
         int c = eb_nextc(b, offset, &offset);
         if (c == '\n') {
@@ -4901,7 +4901,7 @@ int qe_get_prototype(CmdDef *d, char *buf, int size)
         r++;    /* buffer modification indicator */
     }
 
-    for (;;) {
+    while (1) {
         unsigned char arg_type;
         char completion[32];
         char history[32];
@@ -4995,7 +4995,7 @@ static void parse_args(ExecCmdState *es)
     int ret, rep_count, get_arg, type, use_argval, use_key;
     int elapsed_time;
 
-    for (;;) {
+    while (1) {
         ret = parse_arg(&es->ptype, &arg_type,
                         prompt, sizeof(prompt),
                         completion_name, sizeof(completion_name),
@@ -5362,7 +5362,7 @@ void do_execute_macro_keys(qe__unused__ EditState *s, const char *keys)
      */
 
     p = keys;
-    for (;;) {
+    while (1) {
         skip_spaces(&p);
         if (*p == '\0')
             break;
@@ -8062,7 +8062,7 @@ void do_delete_other_windows(EditState *s, int all)
     if (s->flags & (WF_POPUP | WF_MINIBUF))
         return;
 
-    for (;;) {
+    while (1) {
         for (e = qs->first_window; e != NULL; e = e->next_window) {
             if (!(e->flags & WF_MINIBUF) && e != s)
                 break;
@@ -8824,7 +8824,7 @@ void do_load_qerc(EditState *e, const char *filename)
     QEmacsState *qs = e->qe_state;
     EditState *saved = qs->active_window;
 
-    for (;;) {
+    while (1) {
         pstrcpy(buf, sizeof(buf), filename);
         p = strchr(p, '/');
         if (!p)
@@ -9090,7 +9090,7 @@ static void init_all_modules(void)
     int (**ptr)(void);
 
     ptr = (int (**)(void))(void *)&qe__initcall_first;
-    for (;;) {
+    while (1) {
 #if defined(__BOUNDS_CHECKING_ON)
         /* NOTE: if bound checking is on, a NULL is inserted between
            each initialized 'void *' */
@@ -9112,7 +9112,7 @@ static void exit_all_modules(void)
     int (**ptr)(void);
 
     ptr = (int (**)(void))(void *)&qe__exitcall_first;
-    for (;;) {
+    while (1) {
 #if defined(__BOUNDS_CHECKING_ON)
         /* NOTE: if bound checking is on, a NULL is inserted between
            each initialized 'void *' */
@@ -9329,7 +9329,7 @@ static void qe_init(void *opaque)
     qe_key_init(&key_ctx);
 
     /* select the suitable display manager */
-    for (;;) {
+    while (1) {
         dpy = probe_display();
         if (!dpy) {
             fprintf(stderr, "No suitable display found, exiting\n");
