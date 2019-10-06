@@ -2895,7 +2895,8 @@ void display_mode_line(EditState *s)
         if (!strequal(buf, s->modeline_shadow)) {
 	    enum QEStyle style = QE_STYLE_MODE_LINE;
 
-	    if (s->qe_state->active_window == s)
+	    if (s->qe_state->active_window->target_window == s
+	        || s->qe_state->active_window == s)
 		style = QE_STYLE_ACTIVE_MODE_LINE;
 
             print_at_byte(s->screen, s->xleft, y, s->width,
