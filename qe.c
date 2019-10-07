@@ -1364,9 +1364,10 @@ void text_scroll_up_down(EditState *s, int dir)
     perform_scroll_up_down(s, dir * h);
 }
 
-/* center the cursor in the window */
+/* center the cursor in the window (center_only = true) or move
+   center->top->bottom (center_only = false)*/
 /* XXX: make it generic to all modes */
-void do_center_cursor(EditState *s, int force)
+void do_center_top_bottom_cursor(EditState *s, int center_only, int force)
 {
     CursorContext cm;
 
@@ -1375,7 +1376,7 @@ void do_center_cursor(EditState *s, int force)
         return;
 
     if (s->offset < s->offset_top
-    ||  (s->offset_bottom >= 0 && s->offset >= s->offset_bottom)) {
+        ||  (s->offset_bottom >= 0 && s->offset >= s->offset_bottom)) {
         /* if point is outside the current window, first move the
          * window to start at the line with point.  This significantly
          * speeds up get_cursor_pos() on large files, except for the
@@ -1383,17 +1384,29 @@ void do_center_cursor(EditState *s, int force)
          */
         int offset = eb_prev(s->b, s->offset);
         s->offset_top = s->mode->backward_offset(s, offset);
-    } else {
-        if (!force)
-            return;
-    }
+    } else if (!force)
+	return;
 
     get_cursor_pos(s, &cm);
     if (cm.xc == NO_CURSOR)
         return;
 
     /* try to center display */
-    perform_scroll_up_down(s, -((s->height / 2) - cm.yc));
+    if (!center_only && cm.yc == (s->height / 2))
+	perform_scroll_up_down(s, cm.yc);
+    else if (!center_only && cm.yc == 0)         // cursor in 
+	perform_scroll_up_down(s, -s->height +
+	                       ((s->flags & WF_MODELINE) != 0) *
+	                       s->qe_state->mode_line_height);
+    else
+	perform_scroll_up_down(s, (cm.yc - (s->height / 2)));
+
+}
+
+void do_center_cursor(EditState *s)
+{
+    do_center_top_bottom_cursor(s, 1, 1);
+
 }
 
 /* called each time the cursor could be displayed */
@@ -7947,7 +7960,7 @@ void do_refresh_complete(EditState *s)
     qs->complete_refresh = 1;
 
     if (s->qe_state->last_cmd_func == (CmdFunc)do_refresh_complete) {
-        do_center_cursor(s, 1);
+        do_center_top_bottom_cursor(s, 0, 1);
     } else {
         do_refresh(s);
     }

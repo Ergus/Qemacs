@@ -163,9 +163,7 @@ static void build_bufed_list(BufedState *bs, EditState *s)
 
 static EditBuffer *bufed_get_buffer(BufedState *bs, EditState *s)
 {
-    int index;
-
-    index = list_get_pos(s);
+    int index = list_get_pos(s);
     if (index < 0 || index >= bs->items.nb_items)
         return NULL;
 

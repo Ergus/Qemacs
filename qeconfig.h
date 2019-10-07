@@ -243,8 +243,8 @@ static CmdDef basic_commands[] = {
     CMD0( KEY_CTRLX('p'), KEY_NONE,
           "previous-window", do_previous_window)
 #ifndef CONFIG_TINY
-    CMD1( KEY_META(KEY_CTRL('l')), KEY_NONE,
-          "center-cursor", do_center_cursor, 1)
+    CMD2( KEY_META(KEY_CTRL('l')), KEY_NONE,
+          "center-cursor", do_center_cursor, ES, "*")
     CMD1( KEY_CTRL('x'), KEY_UP,
           "find-window-up", do_find_window, KEY_UP)
     CMD1( KEY_CTRL('x'), KEY_DOWN,
