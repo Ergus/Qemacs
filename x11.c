@@ -98,9 +98,9 @@ static int font_ptsize;
 
 static const char * const default_x11_fonts[NB_FONT_FAMILIES] = {
 #ifdef CONFIG_XFT
-    "monospace",
-    "sans",
-    "serif"
+    "Liberation Mono",
+    "Sans",
+    "Serif"
 #else
     "fixed,unifont",
     "times,unifont",
