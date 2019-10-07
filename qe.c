@@ -3544,7 +3544,6 @@ static void flush_line(DisplayState *ds,
                 x += frag->width;
             }
 
-
             if (last != -1) {
                 if (nb_fragments == 0
                     || fragments[nb_fragments - 1].style != ds->eol_style)
@@ -4433,7 +4432,6 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
     /* prompt display, only on first line */
     if (s->prompt && offset1 == 0) {
         const char *p = s->prompt;
-
 	ds->style = QE_STYLE_MINIBUF;
         while (*p)
             display_char(ds, -1, -1, utf8_decode(&p));
@@ -4477,14 +4475,12 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
     /* line numbers */
     if (ds->line_numbers) {
-	const QETermStyle save_style = ds->style;
-
 	ds->style = (s->bools.get.hl_current_line_number &&
 	             s->offset >= offset &&
 	             s->offset < offset0)
 		? QE_STYLE_CURRENT_LINUM : QE_STYLE_LINUM;
         display_printf(ds, -1, -1, "%7d ", line_num + 1);
-        ds->style = save_style;
+        ds->style = QE_STYLE_DEFAULT;
     }
 
     ds->eol_style = ds->style;
@@ -4543,8 +4539,8 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             offset = -1; /* signal end of text */
             break;
         } else {
-	    ds->style = (char_index <= colored_nb_chars ?
-	                 sbuf[char_index] : QE_STYLE_DEFAULT);
+	    ds->style = (char_index < colored_nb_chars) ?
+	                 sbuf[char_index] : QE_STYLE_DEFAULT;
 
             c = eb_nextc(s->b, offset, &offset);
             if (c == '\n' && !(s->flags & WF_MINIBUF)) {
@@ -7970,8 +7966,8 @@ void do_other_window(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
     EditState *init = s;
-
     EditState *e = s->next_window;
+
     if (!e)
         e = qs->first_window;
 
