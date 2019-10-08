@@ -99,10 +99,39 @@ higher than 3.0.
 	make install
 	```
 
+## Dependencies
+
+Qemacs is designed with the intention to be small fast ans self
+consistent. This simplicity philosophy extends also to the dependencies.
+
+The simplest version of qemacs (-DENABLE_TINY=ON) can be build with no
+external dependencies; also the tty version in most of the supported
+systems.
+
+For the X11 version there are some minimal requirements that need to
+be satisfied in order to access X11 functionalities.
+
+### Build
+
+- libx11-dev: is needed to build with the gui support.
+
+- libxft-dev: to build with FreeType font support.
+
+- libglib2.0-dev: to build with gsettings integration (find the right
+  font configured in the system).
+
+All the dependencies above are only needed to build the sources in
+GNU/Linux systems because the libraries needed at runtime are already
+available in most of the distributions.
+
+To build without X11 support and bypass all these dependencies add
+`-DENABLE_X11=false` in the CMake configuration line.
+
 ## Documentation
 
-When built with `-DENABLE_DOC=on` (the default) the compilation system will
-generate a documentation file in html format in the build directory.
+When built with `-DENABLE_DOC=on` (the default) the compilation system
+will generate a documentation file in html format in the build
+directory.
 
 But also original [qemacs](https://bellard.org/qemacs/) project already
 provides a useful [online
