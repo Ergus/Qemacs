@@ -42,6 +42,13 @@
 #include <X11/extensions/Xvlib.h>
 #endif
 
+#ifdef CONFIG_GCONFIG
+#include <gio/gio.h>
+#define GSETTINGS_SCHEMA     "org.gnome.desktop.interface"
+#define GSETTINGS_MONO_FONT  "monospace-font-name"
+#define GSETTINGS_FONT_NAME  "font-name"
+#endif
+
 //#define CONFIG_DOUBLE_BUFFER  1
 
 /* NOTE: XFT code is currently broken */
@@ -96,9 +103,9 @@ static const char *display_str;
 static const char *geometry_str;
 static int font_ptsize;
 
-static const char * const default_x11_fonts[NB_FONT_FAMILIES] = {
+static const char default_x11_fonts[NB_FONT_FAMILIES][64] = {
 #ifdef CONFIG_XFT
-    "Liberation Mono",
+    "Mono",
     "Sans",
     "Serif"
 #else
@@ -504,6 +511,22 @@ static void x11_dpy_xor_rectangle(QEditScreen *s,
     XSetFunction(xs->display, xs->gc, GXxor);
     XftDrawRect(xs->renderDraw, &col, x1, y1, w, h);
     XSetFunction(xs->display, xs->gc, GXcopy);
+/* Separate number from family name, this modifies both inputs. */
+void font_split(char *family, int *size) {
+    *size = 0;
+    if (family == NULL || family[0] == '\0' || isspace(family[0]))
+	return;
+    const int initial_size = strlen(family);
+    char *ptr1 = strrchr(family, ' ');
+    const size_t distance = ptr1 - family;
+    if (distance < initial_size && distance > 0) {
+	char *ptr2;
+	int ret = strtol (ptr1 + 1, &ptr2, 10);
+	if (ptr2[0] == '\0') {
+	    ptr1[0] = '\0';
+	    *size = ret;
+	}
+    }
 }
 
 static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
@@ -512,10 +535,10 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
     X11State *xs = s->priv_data;
     int weight, slant;
     XftFont *renderFont = NULL;
+    char family_list[64];
+    family_list[0] = '\0';
+
     QEFont *font = qe_mallocz(QEFont);
-    const char *family_list;
-
-
     if (!font)
         return NULL;
 
@@ -525,10 +548,26 @@ static QEFont *x11_dpy_open_font(QEditScreen *s, int style, int size)
     if (font_index >= NB_FONT_FAMILIES)
         font_index = 0; /* mono font is default */
 
-    family_list = qs->system_fonts[font_index];
+    strcpy(family_list, qs->system_fonts[font_index]);
 
-    if (family_list[0] == '\0')
-        family_list = default_x11_fonts[font_index];
+    if (family_list[0] == '\0') {
+	#ifdef CONFIG_GCONFIG
+	if (font_index == 0) {
+	    GSettings *gsettings = g_settings_new (GSETTINGS_SCHEMA);
+	    GVariant *val = g_settings_get_value (gsettings, GSETTINGS_MONO_FONT);
+	    if (val) {
+		if (g_variant_is_of_type (val, G_VARIANT_TYPE_STRING))
+		    strcpy(family_list, g_variant_get_string (val, NULL));
+		g_variant_unref (val);
+	    }
+	    g_object_unref(gsettings);
+	}
+	#endif
+	if (family_list[0] == '\0')
+	    strcpy (family_list, default_x11_fonts[font_index]);
+    }
+
+    font_split(family_list, &size);
 
     weight = (style & QE_FONT_STYLE_BOLD)
 	? XFT_WEIGHT_BOLD : XFT_WEIGHT_MEDIUM;

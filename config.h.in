@@ -29,5 +29,7 @@
 #cmakedefine CONFIG_XSHM 1
 #cmakedefine CONFIG_XRENDER 1
 #cmakedefine CONFIG_XFT 1
+#cmakedefine CONFIG_GCONFIG 1
+
 
 #endif
