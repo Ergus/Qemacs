@@ -9291,11 +9291,6 @@ static void qe_init(void *opaque)
     /* init all external modules in link order */
     init_all_modules();
 
-#ifdef CONFIG_DLL
-    /* load all dynamic modules */
-    load_all_modules(qs);
-#endif
-
 #if !defined(CONFIG_TINY) && !defined(CONFIG_WIN32)
 #if 0
     /* see if invoked as player */
@@ -9340,6 +9335,7 @@ static void qe_init(void *opaque)
 
     qe_key_init(&key_ctx);
 
+
     /* select the suitable display manager */
     while (1) {
         dpy = probe_display();
@@ -9361,6 +9357,11 @@ static void qe_init(void *opaque)
                dpy->name, qs->screen->width, qs->screen->height);
 
     qe_event_init();
+
+    #ifdef CONFIG_DLL
+    /* load all dynamic modules after loaded the screen */
+    load_all_modules(qs);
+    #endif
 
 #ifndef CONFIG_TINY
     if (use_session_file) {
