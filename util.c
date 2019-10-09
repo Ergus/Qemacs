@@ -48,9 +48,8 @@ struct FindFileState {
 
 FindFileState *find_file_open(const char *path, const char *pattern)
 {
-    FindFileState *s;
+    FindFileState *s = qe_mallocz(FindFileState);
 
-    s = qe_mallocz(FindFileState);
     if (!s)
         return NULL;
     pstrcpy(s->path, sizeof(s->path), path);
@@ -70,7 +69,7 @@ int find_file_next(FindFileState *s, char *filename, int filename_size_max)
     if (s->dir == NULL)
         goto redo;
 
-    for (;;) {
+    while (1) {
         dirent = readdir(s->dir);
         if (dirent == NULL) {
         redo:
