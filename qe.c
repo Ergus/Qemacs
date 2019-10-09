@@ -9171,7 +9171,7 @@ static void load_all_modules(QEmacsState *qs)
     if (!ffst)
         goto done;
 
-    while (!find_file_next(ffst, filename, sizeof(filename))) {
+    while (find_file_next(ffst, filename, sizeof(filename)) == 0) {
         h = dlopen(filename, RTLD_LAZY);
         if (!h) {
             char *error = dlerror();

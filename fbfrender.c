@@ -363,12 +363,9 @@ int fbf_render_init(const char *font_path)
     if (!ffs)
         return -1;
 
-    for (;;) {
-        if (find_file_next(ffs, filename, sizeof(filename)))
-            break;
-        if (fbf_load_font_file(filename) < 0) {
+    while (find_file_next(ffs, filename, sizeof(filename)) == 0) {
+        if (fbf_load_font_file(filename) < 0)
             fprintf(stderr, "Could not load font '%s'\n", filename);
-        }
     }
     return 0;
 }

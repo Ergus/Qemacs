@@ -975,7 +975,7 @@ static void dired_build_list(DiredState *ds, const char *path,
     /* Should scan directory/filespec before computing lines to adjust
      * filename gutter width.
      */
-    while (!find_file_next(ffst, filename, sizeof(filename))) {
+    while (find_file_next(ffst, filename, sizeof(filename)) == 0) {
         if (lstat(filename, &st) < 0)
             continue;
         p = get_basename(filename);
