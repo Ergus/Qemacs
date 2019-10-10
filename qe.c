@@ -1655,10 +1655,9 @@ void do_combine_char(EditState *s, int accent)
     c = eb_prevc(s->b, s->offset, &offset0);
     if (c == accent) {
         eb_delete_range(s->b, offset0, s->offset);
-    } else
-    if (((expand_ligature(g, c) && g[1] == (unsigned int)accent)
-    ||   (c != '\n' && combine_accent(g, c, accent)))
-    &&  (len = eb_encode_uchar(s->b, buf, g[0])) > 0) {
+    } else if (((expand_ligature(g, c) && g[1] == (unsigned int)accent)
+                || (c != '\n' && combine_accent(g, c, accent)))
+               && (len = eb_encode_uchar(s->b, buf, g[0])) > 0) {
         /* XXX: should bypass eb_encode_uchar to detect encoding failure */
         eb_replace(s->b, offset0, s->offset - offset0, buf, len);
         s->offset = offset0 + len;
@@ -9182,29 +9181,28 @@ static void load_all_modules(QEmacsState *qs)
         if (!h) {
             char *error = dlerror();
             put_status(NULL, "Could not open module '%s': %s",
-                       filename, error);
+	               filename, error);
             continue;
         }
-#if 0
+	#if 0
         /* Writing: init_func = (int (*)(void))dlsym(handle, "xxx");
          * would seem more natural, but the C99 standard leaves
          * casting from "void *" to a function pointer undefined.
          * The assignment used below is the POSIX.1-2003 (Technical
          * Corrigendum 1) workaround; see the Rationale for the
-         * POSIX specification of dlsym().
-         */
+         * POSIX specification of dlsym().  */
         *(void **)&init_func = dlsym(h, "__qe_module_init");
         //init_func = (int (*)(void))dlsym(h, "__qe_module_init");
-#else
-        /* This kludge gets rid of compile and lint warnings */
+	#else
+        /* This kludge gets rid of compile and lint warnings.  */
         sym = dlsym(h, "__qe_module_init");
         memcpy(&init_func, &sym, sizeof(sym));
-#endif
+	#endif
         if (!init_func) {
             dlclose(h);
             put_status(NULL,
-                       "Could not find qemacs initializer in module '%s'",
-                       filename);
+	               "Could not find qemacs initializer in module '%s'",
+	               filename);
             continue;
         }
 
@@ -9213,7 +9211,7 @@ static void load_all_modules(QEmacsState *qs)
     }
     find_file_close(&ffst);
 
-  done:
+done:
     qs->ec = ec;
 }
 
