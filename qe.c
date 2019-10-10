@@ -1637,7 +1637,7 @@ void do_char(EditState *s, int key, int argval)
     while (1) {
         if (s->mode->write_char)
             s->mode->write_char(s, key);
-        if (argval-- <= 1)
+        if (--argval < 1)
             break;
     }
 }
@@ -1682,6 +1682,7 @@ void text_write_char(EditState *s, int key)
     s->region_style = QE_STYLE_DEFAULT;
 
     cur_ch = eb_nextc(s->b, s->offset, &offset1);
+
     cur_len = offset1 - s->offset;
     len = eb_encode_uchar(s->b, buf, key);
     insert = (s->insert || cur_ch == '\n');
@@ -5031,8 +5032,7 @@ static void parse_args(ExecCmdState *es)
         case CMD_ARG_INT:
             if (use_key) {
                 es->args[es->nb_args].n = es->key;
-            } else
-            if (use_argval && es->argval != NO_ARG) {
+            } else if (use_argval && es->argval != NO_ARG) {
                 es->args[es->nb_args].n = es->argval;
                 es->argval = NO_ARG;
             } else {
@@ -5064,8 +5064,7 @@ static void parse_args(ExecCmdState *es)
             es->default_input[0] = '\0';
             if (strequal(completion_name, "file")) {
                 get_default_path(s->b, s->offset, def_input, sizeof(def_input));
-            } else
-            if (strequal(completion_name, "buffer")) {
+            } else if (strequal(completion_name, "buffer")) {
                 EditBuffer *b;
                 if (d->action.ESs == do_switch_to_buffer)
                     b = predict_switch_to_buffer(s);
@@ -5110,7 +5109,10 @@ static void parse_args(ExecCmdState *es)
         /* Save and restore ec context */
         ec = qs->ec;
         qs->ec.function = d->name;
+
+	/* This is the trick for everything and doing dynamic calls. */
         call_func(d->sig, d->action, es->nb_args, es->args, es->args_type);
+
         qs->ec = ec;
         /* CG: This doesn't work if the function needs input */
         /* CG: Should test for abort condition */
