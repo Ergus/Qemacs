@@ -150,7 +150,11 @@ static inline const char *cs8(const u8 *p) { return (const char*)p; }
 #ifndef INT_MIN
 #define INT_MIN  (-0x7fffffff-1)
 #endif
-#define NO_ARG  INT_MIN
+#define NO_ARG  INT_MIN+1               /* The +1 is to fix an error in
+					   some compiler optimizations
+					   like the intel compiler that
+					   optimizes
+					   (val-- <= 1 to --val < 1). */
 #define MAX_FILENAME_SIZE    1024       /* Size for a filename buffer */
 #define MAX_BUFFERNAME_SIZE  256        /* Size for a buffer name buffer */
 #define MAX_CMDNAME_SIZE     32         /* Size for a command name buffer */

@@ -1430,10 +1430,9 @@ void eb_set_charset(EditBuffer *b, QECharset *charset, EOLType eol_type)
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
 {
     u8 buf[MAX_CHAR_BYTES];
-    int ch;
+    int ch = eb_read_one_byte(b, offset);
 
     /* XXX: should inline this */
-    ch = eb_read_one_byte(b, offset);
     if (ch < 0) {
         /* to simplify calling code, return '\n' at buffer boundaries */
         ch = '\n';
