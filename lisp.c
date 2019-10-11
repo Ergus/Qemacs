@@ -292,7 +292,7 @@ static void lisp_colorize_line(QEColorizeContext *cp,
                 goto parse_string;
             }
             if (str[i] == ':'
-            &&  (str[i + 1] == '-' || qe_isalnum_(str[i + 1]))) {
+	        &&  (str[i + 1] == '-' || qe_isalnum_(str[i + 1]))) {
                 len = lisp_get_symbol(kbuf, sizeof(kbuf), str + i + 1);
                 i += 1 + len;
                 goto has_symbol;
@@ -357,12 +357,11 @@ static void lisp_colorize_line(QEColorizeContext *cp,
             while (i < n) {
                 if (str[i] == '\\' && ++i < n) {
                     i++;
-                } else
-                if (str[i++] == '"') {
-                    colstate &= ~IN_LISP_STRING;
-                    has_expr = 1;
-                    break;
-                }
+                } else if (str[i++] == '"') {
+		    colstate &= ~IN_LISP_STRING;
+		    has_expr = 1;
+		    break;
+		}
             }
             style = LISP_STYLE_STRING;
             break;
@@ -371,10 +370,9 @@ static void lisp_colorize_line(QEColorizeContext *cp,
             /* XXX: Should parse keys syntax */
             if (str[i] == '\\' && i + 1 < n) {
                 i += 2;
-            } else
-            if (i < n) {
-                i += 1;
-            }
+            } else if (i < n) {
+		i += 1;
+	    }
         has_char_const:
             has_expr = 1;
             style = LISP_STYLE_CHARCONST;
@@ -400,7 +398,7 @@ static void lisp_colorize_line(QEColorizeContext *cp,
                     break;
                 }
                 if (strfind(lisp_keywords, kbuf)
-                ||  strfind(syn->keywords, kbuf)) {
+		    ||  strfind(syn->keywords, kbuf)) {
                     style = LISP_STYLE_KEYWORD;
                     break;
                 }
@@ -436,8 +434,8 @@ static int elisp_mode_probe(ModeDef *mode, ModeProbeData *p)
 {
     /* check file name or extension */
     if (match_extension(p->filename, mode->extensions)
-    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)
-    ||  strstart(p->filename, ".emacs", NULL))
+        ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)
+        ||  strstart(p->filename, ".emacs", NULL))
         return 80;
 
     return 1;
