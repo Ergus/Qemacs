@@ -235,21 +235,10 @@ QVarType qe_get_variable(EditState *s, const char *name,
     return vp->type;
 }
 
-/* Ugly kludge to check for allocated data: pointers above end are
- * assumed to be allocated with qe_malloc
- */
-extern u8 end[];
-#ifdef CONFIG_DARWIN
-/* XXX: not really at the end, but should be beyond initialized data */
-/* XXX: should remove this hack */
-u8 end[8];
-#endif
-
 static QVarType qe_generic_set_variable(EditState *s, VarDef *vp, void *ptr,
                                         const char *value, int num)
 {
     char buf[32];
-    char **pstr;
 
     switch (vp->type) {
     case VAR_STRING:
@@ -258,8 +247,8 @@ static QVarType qe_generic_set_variable(EditState *s, VarDef *vp, void *ptr,
             value = buf;
         }
         if (!strequal(ptr, value)) {
-            pstr = (char **)ptr;
-            if ((u8 *)*pstr > end)
+            char **pstr = (char **)ptr;
+	    if (ptr)
                 qe_free(pstr);
             *pstr = qe_strdup(value);
             vp->modified = 1;
@@ -315,8 +304,7 @@ QVarType qe_set_variable(EditState *s, const char *name,
         }
         qe_register_variables(vp, 1);
         return vp->type;
-    } else
-    if (vp->rw == VAR_RO) {
+    } else if (vp->rw == VAR_RO) {
         return VAR_READONLY;
     } else {
         switch (vp->domain) {

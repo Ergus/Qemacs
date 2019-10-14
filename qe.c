@@ -75,6 +75,7 @@ int disable_crc;
 int use_session_file;
 int use_html = 1;
 #ifndef CONFIG_TINY
+static void save_selection(void);
 static int free_everything;
 #endif
 
@@ -9095,7 +9096,7 @@ static CmdLineOptionDef cmd_options[] = {
 
 #include "qeconfig.h"
 
-#if (defined(__GNUC__) || defined(__TINYC__)) && defined(CONFIG_INIT_CALLS)
+#ifdef __GNUC__
 
 static void init_all_modules(void)
 {
@@ -9144,7 +9145,7 @@ static void exit_all_modules(void)
 
 #ifndef SPLINT
 #define qe_module_declare(fn)  extern int module_ ## fn(void)
-#include "\"" MODULES "\""
+#include "modules.txt"
 #undef qe_module_declare
 #endif
 
@@ -9152,7 +9153,7 @@ static void init_all_modules(void)
 {
 #ifndef SPLINT
 #define qe_module_declare(fn) module_ ## fn();
-#include "\"" MODULES "\""
+#include "modules.txt"
 #undef qe_module_declare
 #endif
 }

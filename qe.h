@@ -1319,9 +1319,7 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 /* qe module handling */
 
-#ifdef QE_MODULE
-
-/* dynamic module case */
+#ifdef QE_MODULE /* dynamic module case */
 
 #define qe_module_init(fn) \
         int qe__module_init(void) { return fn(); }
@@ -1331,15 +1329,14 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 #else /* QE_MODULE */
 
-#if (defined(__GNUC__) || defined(__TINYC__)) && defined(CONFIG_INIT_CALLS)
+#ifdef __GNUC__
 #if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
 /* same method as the linux kernel... */
 #define qe__init_call   __attribute__((unused, __section__ (".initcall.init")))
 #define qe__exit_call   __attribute__((unused, __section__ (".exitcall.exit")))
 #else
-#define qe__attr_used   __attribute__((__used__))
-#define qe__init_call   qe__attr_used __attribute__((__section__ (".initcall.init")))
-#define qe__exit_call   qe__attr_used __attribute__((__section__ (".exitcall.exit")))
+#define qe__init_call __attribute__((used, section (".initcall.init")))
+#define qe__exit_call __attribute__((used, section (".exitcall.exit")))
 #endif
 
 #define qe_module_init(fn) \
@@ -1347,7 +1344,7 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 #define qe_module_exit(fn) \
         static void (*qe__exitcall_##fn)(void) qe__exit_call = fn
-#else
+#else //__GNUC__
 
 #define qe__init_call
 #define qe__exit_call
@@ -1358,7 +1355,7 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 #define qe_module_exit(fn)
 
-#endif
+#endif //__GNUC__
 
 #endif /* QE_MODULE */
 
