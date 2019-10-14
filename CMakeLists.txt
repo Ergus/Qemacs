@@ -30,7 +30,7 @@ include (GNUInstallDirs)
 cmake_dependent_option(ENABLE_X11
   "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
 cmake_dependent_option(ENABLE_DOC
-  "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
+  "Build documentation" ON "NOT ENABLE_TINY" OFF)
 cmake_dependent_option (ENABLE_XV
   "Enable Xvideo extension support" ON "ENABLE_X11" OFF)
 cmake_dependent_option (ENABLE_XSHM
