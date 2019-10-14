@@ -9192,11 +9192,11 @@ static void load_all_modules(QEmacsState *qs)
          * The assignment used below is the POSIX.1-2003 (Technical
          * Corrigendum 1) workaround; see the Rationale for the
          * POSIX specification of dlsym().  */
-        *(void **)&init_func = dlsym(h, "__qe_module_init");
+        *(void **)&init_func = dlsym(h, "qe__module_init");
         //init_func = (int (*)(void))dlsym(h, "__qe_module_init");
 	#else
         /* This kludge gets rid of compile and lint warnings.  */
-        sym = dlsym(h, "__qe_module_init");
+        sym = dlsym(h, "qe__module_init");
         memcpy(&init_func, &sym, sizeof(sym));
 	#endif
         if (!init_func) {
@@ -9205,7 +9205,9 @@ static void load_all_modules(QEmacsState *qs)
 	               "Could not find qemacs initializer in module '%s'",
 	               filename);
             continue;
-        }
+        } else {
+	    put_status(NULL, "Loaded '%s'", filename);
+	}
 
         /* all is OK: we can init the module now */
         (*init_func)();

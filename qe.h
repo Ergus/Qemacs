@@ -1332,8 +1332,8 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 #ifdef __GNUC__
 #if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
 /* same method as the linux kernel... */
-#define qe__init_call   __attribute__((unused, __section__ (".initcall.init")))
-#define qe__exit_call   __attribute__((unused, __section__ (".exitcall.exit")))
+#define qe__init_call __attribute__((unused, __section__ (".initcall.init")))
+#define qe__exit_call __attribute__((unused, __section__ (".exitcall.exit")))
 #else
 #define qe__init_call __attribute__((used, section (".initcall.init")))
 #define qe__exit_call __attribute__((used, section (".exitcall.exit")))
