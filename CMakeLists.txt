@@ -106,14 +106,12 @@ else ()
     ${EXTRA_MODES} extra-modes.c)
 endif ()
 
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  set (CMAKE_C_FLAGS_RELEASE
-    "${CMAKE_C_FLAGS_RELEASE} -Wall -O2 -funsigned-char -Wno-format-zero-length")
-  set (CMAKE_C_FLAGS_DEBUG
-    "${CMAKE_C_FLAGS_DEBUG} -Wall -g -O0 -funsigned-char -Wno-format-zero-length")
-  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
-endif ()
+set (CMAKE_C_FLAGS_RELEASE
+  "${CMAKE_C_FLAGS_RELEASE} -Wall -O2 -funsigned-char -Wno-format-zero-length")
+set (CMAKE_C_FLAGS_DEBUG
+  "${CMAKE_C_FLAGS_DEBUG} -Wall -g -O0 -funsigned-char -Wno-format-zero-length")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
 
 if (ENABLE_GPROF)
   set (CONFIG_HAVE_GPROF true)
@@ -228,8 +226,8 @@ else ()
   if (CONFIG_PLUGINS)
     set (CONFIG_DLL true)
     set (LIBS ${LIBS} ${CMAKE_DL_LIBS})
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-E")
-    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-E")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -rdynamic")
     add_subdirectory (plugins)
   endif ()
 
