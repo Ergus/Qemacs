@@ -983,7 +983,7 @@ void get_str(const char **pp, char *buf, int buf_size, const char *stop)
     skip_spaces(pp);
     p = *pp;
     q = buf;
-    for (;;) {
+    while (1) {
         c = *p;
         /* Stop on spaces and eat them */
         if (c == '\0' || qe_isspace(c) || strchr(stop, c))

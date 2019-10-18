@@ -159,7 +159,8 @@ static int get_c_identifier(char *buf, int buf_size, const unsigned int *p,
 
 static int qe_haslower(const char *str) {
     while (*str) {
-        if (qe_islower(*str++)) return 1;
+        if (qe_islower(*str++))
+	    return 1;
     }
     return 0;
 }
@@ -323,37 +324,32 @@ static void c_colorize_line(QEColorizeContext *cp,
                 while (i < n) {
                     c = str[i++];
                     if (c == '\\') {
-                        if (i < n) {
+                        if (i < n)
                             i += 1;
-                        }
-                    } else
-                    if (state & IN_C_CHARCLASS) {
-                        if (c == ']') {
-                            state &= ~IN_C_CHARCLASS;
-                        }
-                        /* ECMA 5: ignore '/' inside char classes */
-                    } else {
-                        if (c == '[') {
-                            state |= IN_C_CHARCLASS;
-                        } else
-                        if (c == delim) {
-                            while (qe_isalnum_(str[i])) {
-                                i++;
-                            }
-                            state &= ~IN_C_REGEX;
-                            style = style0;
-                            break;
-                        }
-                    }
+                    } else if (state & IN_C_CHARCLASS) {
+			if (c == ']') {
+			    state &= ~IN_C_CHARCLASS;
+			}
+			    /* ECMA 5: ignore '/' inside char classes */
+		    } else {
+			if (c == '[') {
+			    state |= IN_C_CHARCLASS;
+			} else if (c == delim) {
+			    while (qe_isalnum_(str[i]))
+				i++;
+			    state &= ~IN_C_REGEX;
+			    style = style0;
+			    break;
+			}
+		    }
                 }
                 SET_COLOR(str, start, i, C_STYLE_REGEX);
                 continue;
             }
             break;
         case '%':
-            if (flavor == CLANG_JED) {
+            if (flavor == CLANG_JED)
                 goto parse_comment1;
-            }
             break;
         case '#':       /* preprocessor */
             if (start == 0 && str[i] == '!') {
@@ -492,7 +488,7 @@ static void c_colorize_line(QEColorizeContext *cp,
 
         case '\"':      /* string literal */
             if ((mode_flags & CLANG_STR3)
-            &&  (str[i] == '\"' && str[i + 1] == '\"')) {
+	        &&  (str[i] == '\"' && str[i + 1] == '\"')) {
                 /* multiline """ quoted string */
                 i += 2;
             parse_string3:
@@ -503,8 +499,8 @@ static void c_colorize_line(QEColorizeContext *cp,
                     if (c == '\\' && flavor != CLANG_KOTLIN) {
                         if (i < n)
                             i++;
-                    } else
-                    if (c == '\"' && str[i] == '\"' && str[i + 1] == '\"') {
+                    } else if (c == '\"' && str[i] == '\"'
+		               && str[i + 1] == '\"') {
                         state &= ~IN_C_STRING_BQ;
                         style = style0;
                         break;
@@ -525,8 +521,7 @@ static void c_colorize_line(QEColorizeContext *cp,
                     if (i >= n)
                         break;
                     i++;
-                } else
-                if (c == delim) {
+                } else if (c == delim) {
                     if (flavor == CLANG_SCILAB && (int)str[i] == delim) {
                         i++;
                         continue;
@@ -603,15 +598,15 @@ static void c_colorize_line(QEColorizeContext *cp,
                 }
 
                 if ((start == 0 || str[start - 1] != '.')
-                &&  (!qe_findchar(".(:", str[i]) || flavor == CLANG_PIKE)
-                &&  (strfind(syn->types, kbuf)
-                ||   ((mode_flags & CLANG_CC) && strfind(c_types, kbuf))
-                ||   (((mode_flags & CLANG_CC) || (flavor == CLANG_D)) &&
-                     strend(kbuf, "_t", NULL))
-                ||   ((mode_flags & CLANG_CAP_TYPE) &&
-                      qe_isupper(c) && qe_haslower(kbuf))
-                ||   (flavor == CLANG_HAXE && qe_isupper(c) && qe_haslower(kbuf) &&
-                      (start == 0 || !qe_findchar("(", str[start - 1]))))) {
+		    &&  (!qe_findchar(".(:", str[i]) || flavor == CLANG_PIKE)
+		    &&  (strfind(syn->types, kbuf)
+		         ||   ((mode_flags & CLANG_CC) && strfind(c_types, kbuf))
+		         ||   (((mode_flags & CLANG_CC) || (flavor == CLANG_D)) &&
+			       strend(kbuf, "_t", NULL))
+		         ||   ((mode_flags & CLANG_CAP_TYPE)
+			       && qe_isupper(c) && qe_haslower(kbuf))
+		         ||   (flavor == CLANG_HAXE && qe_isupper(c) && qe_haslower(kbuf) &&
+			       (start == 0 || !qe_findchar("(", str[start - 1]))))) {
                     /* if not cast, assume type declaration */
                     if (str[i2] != ')') {
                         type_decl = 1;

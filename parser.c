@@ -94,11 +94,10 @@ static int qe_cfg_parse_string(EditState *s, const char **pp,
 
 static char *data_gets(QEmacsDataSource *ds, char *buf, int size)
 {
-    if (ds->f) {
+    if (ds->f)
         return fgets(buf, size, ds->f);
-    }
-    if (ds->b) {
-        /* EditBuffer should not be modified during parse! */
+
+    if (ds->b) { /* EditBuffer should not be modified during parse! */
         if (ds->offset < ds->stop && ds->offset < ds->b->total_size) {
             // XXX: parsing will continue beyond `stop` to end of line */
             eb_fgets(ds->b, buf, size, ds->offset, &ds->offset);
@@ -137,13 +136,12 @@ static int qe_parse_script(EditState *s, QEmacsDataSource *ds)
     line_num = ds->line_num;
     /* Should parse whole config file in a single read, or load it via
      * a buffer */
-    for (;;) {
+    while (1) {
         if (data_gets(ds, line, sizeof(line)) == NULL)
             break;
-        line_num++;
         qs->ec.filename = ds->filename;
         qs->ec.function = NULL;
-        qs->ec.lineno = line_num;
+        qs->ec.lineno = ++line_num;
 
         p = line;
     again:
@@ -207,9 +205,7 @@ static int qe_parse_script(EditState *s, QEmacsDataSource *ds)
 #ifndef CONFIG_TINY
         {
             /* search for variable */
-            struct VarDef *vp;
-
-            vp = qe_find_variable(cmd);
+            struct VarDef *vp = qe_find_variable(cmd);
             if (vp) {
                 if (!expect_token(&p, '='))
                     goto fail;
@@ -252,7 +248,7 @@ static int qe_parse_script(EditState *s, QEmacsDataSource *ds)
         /* first argument is always the window */
         args_type[nb_args++] = CMD_ARG_WINDOW;
 
-        for (;;) {
+        while (1) {
             unsigned char arg_type;
             int ret;
 

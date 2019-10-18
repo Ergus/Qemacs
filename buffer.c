@@ -546,12 +546,12 @@ EditBuffer *check_buffer(EditBuffer **sp)
 }
 
 #ifdef CONFIG_TINY
+// Find buffer by name
 EditBuffer *eb_find(const char *name)
 {
     QEmacsState *qs = &qe_state;
-    EditBuffer *b;
+    EditBuffer *b = qs->first_buffer;
 
-    b = qs->first_buffer;
     while (b != NULL) {
         if (strequal(b->name, name))
             return b;
@@ -572,8 +572,7 @@ static int eb_cache_locate(EditBuffer **cache, int len, const char *name)
         cmp = strcmp(name, cache[m]->name);
         if (cmp < 0) {
             bb = m;
-        } else
-        if (cmp > 0) {
+        } else if (cmp > 0) {
             aa = m + 1;
         } else {
             return m;
@@ -832,20 +831,19 @@ void eb_free(EditBuffer **bp)
 
 EditBuffer *eb_find_new(const char *name, int flags)
 {
-    EditBuffer *b;
+    EditBuffer *b = eb_find(name);
 
-    b = eb_find(name);
     if (!b)
         b = eb_new(name, flags);
+
     return b;
 }
 
 EditBuffer *eb_find_file(const char *filename)
 {
     QEmacsState *qs = &qe_state;
-    EditBuffer *b;
+    EditBuffer *b = qs->first_buffer;
 
-    b = qs->first_buffer;
     while (b != NULL) {
         /* XXX: should also use stat to ensure this is same file */
         if (strequal(b->filename, filename))
