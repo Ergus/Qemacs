@@ -2127,6 +2127,7 @@ void do_find_file(EditState *s, const char *filename, int bflags);
 void do_load_from_path(EditState *s, const char *filename, int bflags);
 void do_find_file_other_window(EditState *s, const char *filename, int bflags);
 void do_switch_to_buffer(EditState *s, const char *bufname);
+void do_switch_next_prev_buffer(EditState *s, int forward);
 void do_preview_mode(EditState *s, int set);
 void do_break(EditState *s);
 void do_insert_file(EditState *s, const char *filename);

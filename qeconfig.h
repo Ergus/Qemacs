@@ -160,6 +160,13 @@ static CmdDef basic_commands[] = {
     CMD2( KEY_CTRLX('b'), KEY_NONE,
           "switch-to-buffer", do_switch_to_buffer, ESs,
           "s{Switch to buffer: }[buffer]|buffer|")
+
+    CMD1( KEY_CTRL('x'), KEY_CTRL_RIGHT,
+          "switch-next-buffer", do_switch_next_prev_buffer, KEY_CTRL_RIGHT)
+
+    CMD1( KEY_CTRL('x'), KEY_CTRL_LEFT,
+          "switch-next-buffer", do_switch_next_prev_buffer, KEY_CTRL_LEFT)
+
     CMD3( KEY_CTRLX('k'), KEY_NONE,
           "kill-buffer", do_kill_buffer, ESsi, 0,
           "s{Kill buffer: }[buffer]|buffer|"
