@@ -2463,9 +2463,9 @@ int eb_fgets(EditBuffer *b, char *buf, int buf_size,
 
 int eb_prev_line(EditBuffer *b, int offset)
 {
-    int offset1, seen_nl;
+    int offset1, seen_nl = 0;
 
-    for (seen_nl = 0;;) {
+    while (1) {
         if (eb_prevc(b, offset, &offset1) == '\n') {
             if (seen_nl++)
                 break;
@@ -2487,6 +2487,22 @@ int eb_goto_bol(EditBuffer *b, int offset)
     }
     return offset;
 }
+
+/* return offset of the first non blank character in this line */
+int eb_goto_indentation(EditBuffer *b, int offset)
+{
+    int c, bol = eb_goto_bol(b, offset);
+
+    int next = bol;
+    while (1) {
+        c = eb_nextc(b, next, &bol);
+        if (!qe_isblank(c) || c == '\n')
+            break;
+	next = bol;
+    }
+    return next;
+}
+
 
 /* move to the beginning of the line containing offset */
 /* return offset of the beginning of the line containing offset */
@@ -2536,12 +2552,11 @@ int eb_is_in_indentation(EditBuffer *b, int offset)
 /* return offset of the end of the line containing offset */
 int eb_goto_eol(EditBuffer *b, int offset1)
 {
-    int c, offset;
+    int offset;
 
     while (1) {
         offset = offset1;
-        c = eb_nextc(b, offset, &offset1);
-        if (c == '\n')
+        if (eb_nextc(b, offset, &offset1) == '\n')
             break;
     }
     return offset;

@@ -151,6 +151,8 @@ void qe_register_mode(ModeDef *m, int flags)
             m->move_up_down = text_move_up_down;
         if (!m->move_left_right)
             m->move_left_right = text_move_left_right_visual;
+	if (!m->move_indent)
+	    m->move_indent = text_move_indent;
         if (!m->move_bol)
             m->move_bol = text_move_bol;
         if (!m->move_eol)
@@ -607,6 +609,12 @@ void do_bol(EditState *s)
         s->mode->move_bol(s);
 }
 
+void do_indent(EditState *s)
+{
+    if (s->mode->move_indent)
+        s->mode->move_indent(s);
+}
+
 void do_eol(EditState *s)
 {
     if (s->mode->move_eol)
@@ -618,6 +626,7 @@ void do_word_right(EditState *s, int dir)
     if (s->mode->move_word_left_right)
         s->mode->move_word_left_right(s, dir);
 }
+
 
 void text_move_bof(EditState *s)
 {
@@ -637,6 +646,11 @@ void text_move_bol(EditState *s)
 void text_move_eol(EditState *s)
 {
     s->offset = eb_goto_eol(s->b, s->offset);
+}
+
+void text_move_indent(EditState *s)
+{
+    s->offset = eb_goto_indentation(s->b, s->offset);
 }
 
 void word_right(EditState *s, int w)
@@ -8796,6 +8810,7 @@ ModeDef text_mode = {
 
     .move_up_down = text_move_up_down,
     .move_left_right = text_move_left_right_visual,
+    .move_indent = text_move_indent,
     .move_bol = text_move_bol,
     .move_eol = text_move_eol,
     .move_bof = text_move_bof,

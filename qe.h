@@ -1291,6 +1291,7 @@ int eb_fgets(EditBuffer *b, char *buf, int buf_size,
              int offset, int *offset_ptr);
 int eb_prev_line(EditBuffer *b, int offset);
 int eb_goto_bol(EditBuffer *b, int offset);
+int eb_goto_indentation(EditBuffer *b, int offset);
 int eb_goto_bol2(EditBuffer *b, int offset, int *countp);
 int eb_is_blank_line(EditBuffer *b, int offset, int *offset1);
 int eb_is_in_indentation(EditBuffer *b, int offset);
@@ -1580,6 +1581,7 @@ struct ModeDef {
     /* TODO: Should have single move function with move type and argument */
     void (*move_up_down)(EditState *s, int dir);
     void (*move_left_right)(EditState *s, int dir);
+    void (*move_indent)(EditState *s);
     void (*move_bol)(EditState *s);
     void (*move_eol)(EditState *s);
     void (*move_bof)(EditState *s);
@@ -2180,6 +2182,7 @@ void do_kill_region(EditState *s, int keep);
 void do_kill_line(EditState *s, int argval);
 void do_kill_beginning_of_line(EditState *s, int argval);
 void do_kill_word(EditState *s, int dir);
+void text_move_indent(EditState *s);
 void text_move_bol(EditState *s);
 void text_move_eol(EditState *s);
 void text_move_bof(EditState *s);
@@ -2208,6 +2211,7 @@ int qe_mode_set_key(ModeDef *m, const char *keystr, const char *cmd_name);
 void do_set_key(EditState *s, const char *keystr, const char *cmd_name,
                 int local);
 //void do_unset_key(EditState *s, const char *keystr, int local);
+void do_indent(EditState *s);
 void do_bof(EditState *s);
 void do_eof(EditState *s);
 void do_bol(EditState *s);

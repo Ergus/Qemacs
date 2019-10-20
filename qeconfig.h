@@ -88,6 +88,8 @@ static CmdDef basic_commands[] = {
           "scroll-up-one", do_scroll_up_down, 1 ) /* u? */
     CMD0( KEY_CTRL('a'), KEY_HOME,
           "beginning-of-line", do_bol)
+    CMD0( KEY_META('m'), KEY_NONE,
+          "back-to-indentation", do_indent)
     CMD0( KEY_CTRL('e'), KEY_END,
           "end-of-line", do_eol)
     CMD0( KEY_META('<'), KEY_CTRL_HOME,
@@ -160,13 +162,10 @@ static CmdDef basic_commands[] = {
     CMD2( KEY_CTRLX('b'), KEY_NONE,
           "switch-to-buffer", do_switch_to_buffer, ESs,
           "s{Switch to buffer: }[buffer]|buffer|")
-
     CMD1( KEY_CTRL('x'), KEY_CTRL_RIGHT,
           "switch-next-buffer", do_switch_next_prev_buffer, KEY_CTRL_RIGHT)
-
     CMD1( KEY_CTRL('x'), KEY_CTRL_LEFT,
-          "switch-next-buffer", do_switch_next_prev_buffer, KEY_CTRL_LEFT)
-
+          "switch-prev-buffer", do_switch_next_prev_buffer, KEY_CTRL_LEFT)
     CMD3( KEY_CTRLX('k'), KEY_NONE,
           "kill-buffer", do_kill_buffer, ESsi, 0,
           "s{Kill buffer: }[buffer]|buffer|"
@@ -299,9 +298,9 @@ static CmdDef basic_commands[] = {
     CMD2( KEY_CTRLH('t'), KEY_NONE,
           "set-trace-options", do_set_trace_options, ESs,
           "s{Trace options: }|trace|")
-    CMD0( KEY_CTRLH('c'), KEY_CTRLH('k'),
+    CMD0( KEY_CTRLH('k'), KEY_NONE,
           "describe-key-briefly", do_describe_key_briefly)
-    CMD0( KEY_CTRLH(KEY_CTRL('h')), KEY_F1,
+    CMD0( KEY_CTRLH('h'), KEY_NONE,
           "help-for-help", do_help_for_help)
 
     /*---------------- International ----------------*/
@@ -393,7 +392,7 @@ static CmdDef basic_commands[] = {
           "set-auto-coding", do_set_auto_coding, 1)
     CMD1( KEY_NONE, KEY_NONE,
           "set-auto-mode", do_set_next_mode, 0)
-    CMD1( KEY_META('m'), KEY_NONE,
+    CMD1( KEY_NONE, KEY_NONE,
           "set-next-mode", do_set_next_mode, 1)
     CMD1( KEY_NONE, KEY_NONE,
           "set-previous-mode", do_set_next_mode, -1)
