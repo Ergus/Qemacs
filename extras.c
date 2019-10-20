@@ -52,6 +52,7 @@ static int qe_skip_comments(EditState *s, int offset, int *offsetp)
     return 1;
 }
 
+
 static int qe_skip_spaces(EditState *s, int offset, int *offsetp)
 {
     int offset0 = offset, offset1;
@@ -1822,8 +1823,7 @@ static void do_goto_tag(EditState *s) {
     if (len >= sizeof(buf)) {
         put_status(s, "Tag too large");
         return;
-    } else
-    if (len == 0) {
+    } else if (len == 0) {
         put_status(s, "No tag");
         return;
     } else {
