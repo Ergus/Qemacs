@@ -1390,13 +1390,13 @@ enum WrapType {
 #define DIR_RTL 1
 
 union bitset {
-    uint mask:5;
+    unsigned int mask:5;
     struct {
-	uint line_numbers:1;
-	uint hl_current_line_number:1;
-	uint hl_current_line:1;
-	uint fill_column_indicator:1;
-	uint bidir:1;
+	unsigned int line_numbers:1;
+	unsigned int hl_current_line_number:1;
+	unsigned int hl_current_line:1;
+	unsigned int fill_column_indicator:1;
+	unsigned int bidir:1;
     } get;
 };
 
@@ -1492,7 +1492,7 @@ struct EditState {
     OWNED char *prompt;  /* optional window prompt, utf8 */
     OWNED struct {
 	char *text;  /* optional window caption or title, utf8 */
-	uint flags;     /* flags for position */
+	unsigned int flags;     /* flags for position */
     } caption;
     //const char *mode_line;
     //const char *title;
