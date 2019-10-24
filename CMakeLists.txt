@@ -207,26 +207,6 @@ add_subdirectory (src)
 
 # Extra files
 
-# Documentation
-
-install (FILES qe.1 DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
-install (FILES config.eg DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
-
 if (ENABLE_DOC)
-  find_program (MAKEINFO makeinfo)
-  if (MAKEINFO)
-    function (buildtexi input output)
-      set(SOURCE_DOC "${PROJECT_SOURCE_DIR}/${input}")
-
-      add_custom_command(OUTPUT ${output}
-	COMMAND ${MAKEINFO} --html --no-split ${SOURCE_DOC}
-	MAIN_DEPENDENCY ${SOURCE_DOC})
-
-      add_custom_target("${output}_doc" ALL DEPENDS ${output})
-    endfunction ()
-
-    buildtexi (qe-doc.texi qe-doc.html)
-  else ()
-    message ("makeinfo program not available")
-  endif ()
+  add_subdirectory (doc)
 endif ()
