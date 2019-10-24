@@ -73,37 +73,16 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
   set (CONFIG_QE_PLUGINS_DIR "${PROJECT_BINARY_DIR}/plugins")
 endif ()
 
-include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
-
-add_subdirectory (cp)
-
 add_definitions (-DHAVE_QE_CONFIG_H)
 
 # Sources
-
-set (SOURCES   # objs
-  qe.c util.c cutils.c charset.c buffer.c search.c
-  input.c display.c hex.c list.c)
 
 if (ENABLE_TINY)
   set (QE_DEFINITION "CONFIG_TINY")
   set (SOURCES ${SOURCES} parser.c)
 else ()
-  set (SOURCES ${SOURCES}
-    qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
-
   set (CONFIG_ALL_KMAPS true)
-  set (SOURCES ${SOURCES} kmap.c)
-
   set (CONFIG_UNICODE_JOIN true)
-  set (SOURCES ${SOURCES} unicode_join.c arabic.c indic.c qfribidi.c)
-
-  set (SOURCES ${SOURCES}
-    unihex.c bufed.c clang.c xml.c
-    htmlsrc.c forth.c arm.c lisp.c makemode.c
-    markdown.c orgmode.c perl.c script.c
-    ebnf.c cobol.c rlang.c txl.c nim.c rebol.c elm.c jai.c ats.c
-    ${EXTRA_MODES} extra-modes.c)
 endif ()
 
 set (CMAKE_C_FLAGS_RELEASE
@@ -135,12 +114,8 @@ if (WIN32)
 
   if (${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
     set (CONFIG_CYGWIN true)
-  else ()
-    set (LIBS ${LIBS} ws2_32)
   endif ()
 
-  set (SOURCES ${SOURCES} unix.c win32.c)
-  set (LIBS ${LIBS} msvcrt gdi32 wsock32)
 else ()
   set (CONFIG_INIT_CALLS true)
   set (CONFIG_NETWORK true)
@@ -182,7 +157,6 @@ else ()
       set (QE_X11 ${X11_LIBRARIES})
       set (QE_DEFINITION "CONFIG_X11")
 
-
       if (ENABLE_XV AND  X11_Xv_FOUND)
 	set (CONFIG_XV ${X11_Xv_FOUND})
 	set (QE_X11 ${QE_X11} ${X11_Xv_LIB})
@@ -217,14 +191,7 @@ else ()
 	  set (QE_X11 ${QE_X11} ${GLIB2_LIBRARIES})
 	endif ()
       endif ()
-
-      set (SOURCES ${SOURCES} x11.c)
-      set (LIBS ${LIBS} ${QE_X11})
     endif ()
-  endif ()
-
-  if (CONFIG_INIT_CALLS)
-    set (QEND qeend.c)
   endif ()
 
   if (CONFIG_PLUGINS)
@@ -232,86 +199,13 @@ else ()
     set (LIBS ${LIBS} ${CMAKE_DL_LIBS})
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
     set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -rdynamic")
-    add_subdirectory (plugins)
   endif ()
 
 endif ()
 
-if (CONFIG_HTML)
-  include_directories (libqhtml)
-  add_subdirectory (libqhtml)
-  set (SOURCES ${SOURCES} html.c docbook.c)
-  set (LIBS ${LIBS} qhtml)
-  set (CONFIG_HTML true)
-
-  add_executable (fbftoqe fbftoqe.c cutils.c)
-  file (GLOB fonts_in fonts/*.fbf)
-  add_custom_command(
-    OUTPUT fbffonts.c
-    COMMAND fbftoqe ${fonts_in} > fbffonts.c
-    DEPENDS fbftoqe ${fonts_in})
-
-  set (OBJS1 html2png.c util.c cutils.c
-    arabic.c indic.c qfribidi.c display.c unicode_join.c
-    charset.c ${CHARSETMORE} charsetjis.c
-    libfbf.c fbfrender.c cfb.c fbffonts.c)
-
-  add_executable (html2png ${OBJS1})
-  add_dependencies (html2png CHARSET)
-  target_link_libraries (html2png qhtml)
-  install(TARGETS html2png DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-  if (CONFIG_PNG_OUTPUT)
-    target_compile_definitions (html2png PRIVATE CONFIG_PNG_OUTPUT=1)
-    target_link_libraries (html2png ${PNG_LIBRARIES})
-  endif ()
-endif ()
-
-function (make_modules output)
-  set (targetname "${output}")
-  set (filename "${${output}}")
-  add_custom_command (
-    OUTPUT "${filename}"
-    COMMAND cmake -DOUT="${filename}" -DIN="${ARGN}" -P cmake-modules.cmake
-    DEPENDS ${ARGN}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generate ${filename}"
-    )
-  add_custom_target (${targetname} DEPENDS ${filename})
-  add_dependencies(${targetname} CHARSET)
-endfunction ()
-
-set (MODULES "${CMAKE_CURRENT_BINARY_DIR}/modules.txt")
-make_modules (MODULES ${SOURCES})
-add_executable (qemacs "${SOURCES}" ${QEND})
-add_dependencies(qemacs CHARSET MODULES)
-target_link_libraries (qemacs ${LIBS})
-target_compile_definitions (qemacs
-  PRIVATE ${QE_DEFINITION} MODULES="${MODULES}")
-install(TARGETS qemacs DESTINATION ${CMAKE_INSTALL_BINDIR})
+add_subdirectory (src)
 
 # Extra files
-
-add_executable (ligtoqe ligtoqe.c cutils.c)
-add_custom_command (
-  OUTPUT "${PROJECT_BINARY_DIR}/ligatures"
-  COMMAND ligtoqe unifont.lig "${PROJECT_BINARY_DIR}/ligatures"
-  DEPENDS ligtoqe unifont.lig
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_target(makelig ALL DEPENDS "${PROJECT_BINARY_DIR}/ligatures")
-install (FILES "${PROJECT_BINARY_DIR}/ligatures" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
-
-add_executable (kmaptoqe kmaptoqe.c cutils.c)
-file (GLOB kmaps_in kmap/*.kmap)
-add_custom_command(
-  OUTPUT "${PROJECT_BINARY_DIR}/kmaps"
-  COMMAND kmaptoqe "${PROJECT_BINARY_DIR}/kmaps" ${kmaps_in}
-  DEPENDS kmaptoqe ${kmaps_in})
-add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
-install (FILES "${PROJECT_BINARY_DIR}/kmaps" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
-
-# Generate config.h
-configure_file (config.h.in config.h)
 
 # Documentation
 

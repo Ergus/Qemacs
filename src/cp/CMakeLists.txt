@@ -10,7 +10,7 @@ set (CP 8859-2.TXT   8859-3.TXT   8859-4.TXT   8859-5.TXT   8859-6.TXT
   kamen.cp     KOI8-R.TXT   koi8_u.cp    TCVN.TXT     VISCII.TXT
   CP037.TXT    CP424.TXT    CP500.TXT    CP875.TXT    CP1026.TXT)
 
-add_executable (cptoqe cptoqe.c ${PROJECT_SOURCE_DIR}/cutils.c)
+add_executable (cptoqe cptoqe.c ${PROJECT_SOURCE_DIR}/src/cutils.c)
 
 add_custom_command(
   OUTPUT ${CHARSETMORE}
@@ -23,7 +23,7 @@ add_custom_command(
 
 set (JIS JIS0208.TXT JIS0212.TXT)
 
-add_executable (jistoqe jistoqe.c ${PROJECT_SOURCE_DIR}/cutils.c)
+add_executable (jistoqe jistoqe.c ${PROJECT_SOURCE_DIR}/src/cutils.c)
 
 add_custom_command(
   OUTPUT ${CHARSETJIS}
