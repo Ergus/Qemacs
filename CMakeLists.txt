@@ -205,8 +205,41 @@ endif ()
 
 add_subdirectory (src)
 
-# Extra files
+# Doc
 
 if (ENABLE_DOC)
   add_subdirectory (doc)
 endif ()
+
+install (FILES config.eg DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
+
+# CPack
+
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY
+  "qemacs (qe) - a small editor with some special features")
+
+set (CPACK_PACKAGE_DESCRIPTION
+  "QEmacs is an terminal-based text editor (with Emacs look&feel) with
+a small size and some unique features:
+
+* Full screen editor with an Emacs compatible key subset (including undo and
+  incremental search) and emacs look and feel.
+* Can edit huge files (e.g. 100MBytes) without being slow by using a highly
+  optimized internal representation and by mmaping the file.
+* Full UTF8 support, including double width chars such as ideograms, provided
+  you have an UTF8 VT100 emulator such as a recent xterm.
+* Bidirectional editing conforming to the Unicode Bidir algorithm (for Hebrew or
+  Arabic).
+* Can optionally contain input methods from the Yudit editor for most
+  languages, including Chinese CJ, Hebrew and Arabic.
+* Hexadecimal editing mode with insertion and block commands. Can edit binary
+  files as well as text files."
+)
+
+set (CPACK_PACKAGE_HOMEPAGE_URL "https://bellard.org/qemacs/")
+
+# RPM
+
+set (CPACK_RPM_PACKAGE_GROUP "Editors")
+
+include(CPack)
