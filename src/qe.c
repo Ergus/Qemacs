@@ -1420,7 +1420,7 @@ void do_center_top_bottom_cursor(EditState *s, int center_only, int force)
 
 void do_center_cursor(EditState *s)
 {
-    do_center_top_bottom_cursor(s, 1, 1);
+    do_center_top_bottom_cursor(s, 0, 1);
 
 }
 
@@ -7991,8 +7991,8 @@ void do_refresh_complete(EditState *s)
 
     qs->complete_refresh = 1;
 
-    if (s->qe_state->last_cmd_func == (CmdFunc)do_refresh_complete) {
-        do_center_top_bottom_cursor(s, 0, 1);
+    if (s->qe_state->last_cmd_func == (CmdFunc) do_refresh_complete) {
+        do_center_top_bottom_cursor(s, 1, 1);
     } else {
         do_refresh(s);
     }

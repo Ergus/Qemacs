@@ -486,7 +486,7 @@ static void isearch_key(void *opaque, int ch)
         is->search_flags ^= ~SEARCH_FLAG_REGEX;
         break;
     case KEY_CTRL('l'):
-        do_center_top_bottom_cursor(s, 0, 1);
+        do_center_top_bottom_cursor(s, 1, 1);
         break;
     default:
         if ((KEY_IS_SPECIAL(ch) || KEY_IS_CONTROL(ch)) &&
@@ -786,7 +786,7 @@ static void query_replace_key(void *opaque, int ch)
         query_replace_abort(is);
         return;
     case KEY_CTRL('l'):
-        do_center_top_bottom_cursor(s, 0, 1);
+        do_center_top_bottom_cursor(s, 1, 1);
         break;
     case '.':
         query_replace_replace(is);
