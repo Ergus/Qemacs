@@ -123,15 +123,15 @@ static int get_c_identifier(char *buf, int buf_size, const unsigned int *p,
     i = j = 0;
     c = p[i];
     if (qe_isalpha_(c)
-    ||  c == '$'
-    ||  (c == '@' && flavor != CLANG_PIKE)
-    ||  (flavor == CLANG_RUST && c >= 128)) {
-        for (;;) {
+        ||  c == '$'
+        ||  (c == '@' && flavor != CLANG_PIKE)
+        ||  (flavor == CLANG_RUST && c >= 128)) {
+        while (1) {
             if (j < buf_size - 1) {
                 /* XXX: utf-8 bug */
                 buf[j++] = (c < 0xFF) ? c : 0xFF;
             }
-            i++;
+            ++i;
             c = p[i];
             if (c == '-' && flavor == CLANG_CSS)
                 continue;
@@ -140,8 +140,8 @@ static int get_c_identifier(char *buf, int buf_size, const unsigned int *p,
             if (flavor == CLANG_RUST && c >= 128)
                 continue;
             if (c == ':' && p[i + 1] == ':'
-            &&  flavor == CLANG_CPP
-            &&  qe_isalpha_(p[i + 2])) {
+	        &&  flavor == CLANG_CPP
+	        &&  qe_isalpha_(p[i + 2])) {
                 if (j < buf_size - 2) {
                     buf[j++] = c;
                     buf[j++] = c;
@@ -187,7 +187,7 @@ enum {
     IN_C_STRING     = 0x04,  /* double-quoted string */
     IN_C_STRING_Q   = 0x08,  /* single-quoted string */
     IN_C_STRING_BQ  = 0x10,  /* back-quoted string (go's multi-line string) */
-                             /* """ multiline quoted string (dart, scala) */
+    /* """ multiline quoted string (dart, scala) */
     IN_C_PREPROCESS = 0x20,  /* preprocessor directive with \ at EOL */
     IN_C_REGEX      = 0x40,  /* regex */
     IN_C_CHARCLASS  = 0x80,  /* regex char class */
@@ -232,7 +232,7 @@ static void c_colorize_line(QEColorizeContext *cp,
         if (state & IN_C_STRING_Q)
             goto parse_string_q;
         if ((state & IN_C_STRING_BQ)
-        &&  (flavor == CLANG_SCALA || flavor == CLANG_DART))
+	    &&  (flavor == CLANG_SCALA || flavor == CLANG_DART))
             goto parse_string3;
         if (state & IN_C_STRING_BQ)
             goto parse_string_bq;
@@ -265,16 +265,15 @@ static void c_colorize_line(QEColorizeContext *cp,
                 }
                 SET_COLOR(str, start, i, C_STYLE_COMMENT);
                 continue;
-            } else
-            if (str[i] == '/') {
-                /* line comment */
-            parse_comment1:
-                style = C_STYLE_COMMENT;
-                state |= IN_C_COMMENT1;
-                i = n;
-                SET_COLOR(str, start, i, C_STYLE_COMMENT);
-                continue;
-            }
+            } else if (str[i] == '/') {
+		/* line comment */
+	    parse_comment1:
+		style = C_STYLE_COMMENT;
+		state |= IN_C_COMMENT1;
+		i = n;
+		SET_COLOR(str, start, i, C_STYLE_COMMENT);
+		continue;
+	    }
             if (flavor == CLANG_D && (str[i] == '+')) {
                 /* D language nesting long comment */
                 i++;
@@ -286,20 +285,19 @@ static void c_colorize_line(QEColorizeContext *cp,
                     if (str[i] == '/' && str[i + 1] == '+') {
                         i += 2;
                         level++;
-                    } else
-                    if (str[i] == '+' && str[i + 1] == '/') {
-                        i += 2;
-                        level--;
-                        if (level == 0) {
-                            style = style0;
-                            break;
-                        }
-                    } else {
-                        i++;
-                    }
+                    } else if (str[i] == '+' && str[i + 1] == '/') {
+			i += 2;
+			level--;
+			if (level == 0) {
+			    style = style0;
+			    break;
+			}
+		    } else {
+			i++;
+		    }
                 }
                 state = (state & ~IN_C_COMMENT_D) |
-                        (min(level, 7) << IN_C_COMMENT_D_SHIFT);
+		    (min(level, 7) << IN_C_COMMENT_D_SHIFT);
                 SET_COLOR(str, start, i, C_STYLE_COMMENT);
                 continue;
             }
@@ -327,10 +325,9 @@ static void c_colorize_line(QEColorizeContext *cp,
                         if (i < n)
                             i += 1;
                     } else if (state & IN_C_CHARCLASS) {
-			if (c == ']') {
+			if (c == ']')
 			    state &= ~IN_C_CHARCLASS;
-			}
-			    /* ECMA 5: ignore '/' inside char classes */
+			/* ECMA 5: ignore '/' inside char classes */
 		    } else {
 			if (c == '[') {
 			    state |= IN_C_CHARCLASS;
@@ -402,11 +399,11 @@ static void c_colorize_line(QEColorizeContext *cp,
                 }
             }
             goto normal;
-        // case 'r':
+	    // case 'r':
             /* XXX: D language r" wysiwyg chars " */
-        // case 'X':
+	    // case 'X':
             /* XXX: D language X" hex string chars " */
-        // case 'q':
+	    // case 'q':
             /* XXX: D language q" delim wysiwyg chars delim " */
             /* XXX: D language q{ tokens } */
         case '\'':      /* character constant */
@@ -579,8 +576,8 @@ static void c_colorize_line(QEColorizeContext *cp,
                 i = start + klen;
 
                 if (strfind(syn->keywords, kbuf)
-                ||  ((mode_flags & CLANG_CC) && strfind(c_keywords, kbuf))
-                ||  ((flavor == CLANG_CSS) && str[i] == ':')) {
+		    ||  ((mode_flags & CLANG_CC) && strfind(c_keywords, kbuf))
+		    ||  ((flavor == CLANG_CSS) && str[i] == ':')) {
                     SET_COLOR(str, start, i, C_STYLE_KEYWORD);
                     continue;
                 }
@@ -594,7 +591,7 @@ static void c_colorize_line(QEColorizeContext *cp,
 
                 if (tag && qe_findchar("({[,;=", str[i1])) {
                     eb_add_property(cp->b, cp->offset + start,
-                                    QE_PROP_TAG, qe_strdup(kbuf));
+		                    QE_PROP_TAG, qe_strdup(kbuf));
                 }
 
                 if ((start == 0 || str[start - 1] != '.')
@@ -645,7 +642,7 @@ static void c_colorize_line(QEColorizeContext *cp,
         }
         SET_COLOR1(str, start, style);
     }
- the_end:
+the_end:
     if (state & (IN_C_COMMENT | IN_C_COMMENT1 | IN_C_COMMENT_D |
                  IN_C_PREPROCESS |
                  IN_C_STRING | IN_C_STRING_Q | IN_C_STRING_BQ)) {
@@ -673,7 +670,7 @@ static int find_indent1(EditState *s, unsigned int *buf)
     tw = s->b->tab_width > 0 ? s->b->tab_width : 8;
     p = buf;
     pos = 0;
-    for (;;) {
+    while (1) {
         c = *p++;
         if (c == '\t')
             pos += tw - (pos % tw);
@@ -725,6 +722,7 @@ static int normalize_indent(EditState *s, int offset, int indent)
         nspaces = nspaces % tw;
     }
     offset0 = offset;
+
     for (update = 0;;) {
         int c = eb_nextc(s->b, offset1 = offset, &offset);
         if (c == '\t') {
@@ -821,7 +819,7 @@ static void c_indent_line(EditState *s, int offset0)
     found_semi = found_comma = has_else = 0;
     stack_ptr = 0;
     state = INDENT_NORM;
-    for (;;) {
+    while (1) {
         if (offsetl == 0)
             break;
         line_num--;
@@ -1002,7 +1000,7 @@ static void c_indent_line(EditState *s, int offset0)
             }
         }
     }
-  end_parse:
+end_parse:
     /* compute special cases which depend on the chars on the current line */
     /* XXX: deal with truncation */
     len = get_colorized_line(s, buf, countof(buf), sbuf,
@@ -1099,7 +1097,7 @@ static void c_indent_line(EditState *s, int offset0)
     /* the computed indent is in 'pos' */
     /* if on a blank line, reset indent to 0 unless point is on it */
     if (eb_is_blank_line(s->b, offset, NULL)
-    &&  !(s->offset >= offset && s->offset <= eb_goto_eol(s->b, offset))) {
+        &&  !(s->offset >= offset && s->offset <= eb_goto_eol(s->b, offset))) {
         pos = 0;
     }
     /* Normalize indentation, minimize buffer modifications */
@@ -1124,7 +1122,7 @@ static void c_indent_line(EditState *s, int offset0)
         ^ & | + - * / % << >> ^= &= |= += -= *= /= %= <<= >>= ? : */
         /* XXX: sequence operators: , ; */
     }
-#endif
+    #endif
     /* move to the indentation if point was in indent space */
     if (s->offset >= offset && s->offset < offset1) {
         s->offset = offset1;
@@ -1211,19 +1209,18 @@ static void do_c_forward_conditional(EditState *s, int dir)
                 else
                     break;
             } else
-            if (ustrstart(p, "el", NULL)) {
-                if (offset == offset0)
-                    level++;
-                else
-                if (level <= 1)
-                    break;
-            } else
-            if (ustrstart(p, dir > 0 ? "endif" : "if", NULL)) {
-                if (level)
-                    level--;
-                if (!level && offset != offset0)
-                    break;
-            }
+		if (ustrstart(p, "el", NULL)) {
+		    if (offset == offset0)
+			level++;
+		    else if (level <= 1)
+			    break;
+		} else if (ustrstart(p, dir > 0
+		                     ? "endif" : "if", NULL)) {
+			if (level)
+			    level--;
+			if (!level && offset != offset0)
+			    break;
+		    }
         }
         if (dir > 0) {
             line_num++;
@@ -1274,19 +1271,17 @@ static void do_c_list_conditionals(EditState *s)
         if (sharp == 1) {
             if (ustrstart(p, "endif", NULL)) {
                 level++;
-            } else
-            if (ustrstart(p, "el", NULL)) {
-                if (level == 0) {
-                    eb_insert_buffer_convert(b, 0, s->b, offset, offset1 - offset);
-                }
-            } else
-            if (ustrstart(p, "if", NULL)) {
-                if (level) {
-                    level--;
-                } else {
-                    eb_insert_buffer_convert(b, 0, s->b, offset, offset1 - offset);
-                }
-            }
+            } else if (ustrstart(p, "el", NULL)) {
+		if (level == 0) {
+		    eb_insert_buffer_convert(b, 0, s->b, offset, offset1 - offset);
+		}
+	    } else if (ustrstart(p, "if", NULL)) {
+		if (level) {
+		    level--;
+		} else {
+		    eb_insert_buffer_convert(b, 0, s->b, offset, offset1 - offset);
+		}
+	    }
         }
     }
     if (b->total_size > 0) {
@@ -1301,7 +1296,7 @@ static void do_c_list_conditionals(EditState *s)
 static CmdDef c_commands[] = {
     CMD2( KEY_CTRL('i'), KEY_NONE,
           "c-indent-command", do_c_indent, ES, "*")
-            /* should map to KEY_META + KEY_CTRL_LEFT ? */
+    /* should map to KEY_META + KEY_CTRL_LEFT ? */
     CMD3( KEY_META('['), KEY_NONE,
           "c-backward-conditional", do_c_forward_conditional, ESi, -1, "v")
     CMD3( KEY_META(']'), KEY_NONE,
@@ -1319,7 +1314,7 @@ static int c_mode_probe(ModeDef *mode, ModeProbeData *p)
 {
     /* trust the file extension and/or shell handler */
     if (match_extension(p->filename, mode->extensions)
-    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
+        ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
         return 80;
     }
     /* weaker match on C comment start */
@@ -1333,11 +1328,11 @@ static int c_mode_probe(ModeDef *mode, ModeProbeData *p)
     if (p->buf[0] == '#') {
         /* same for files starting with a preprocessor directive */
         if (strstart(cs8(p->buf), "#include", NULL)
-        ||  strstart(cs8(p->buf), "#ifndef", NULL)
-        ||  strstart(cs8(p->buf), "#ifdef", NULL)
-        ||  strstart(cs8(p->buf), "#if ", NULL)
-        ||  strstart(cs8(p->buf), "#define", NULL)
-        ||  strstart(cs8(p->buf), "#pragma", NULL)) {
+	    ||  strstart(cs8(p->buf), "#ifndef", NULL)
+	    ||  strstart(cs8(p->buf), "#ifdef", NULL)
+	    ||  strstart(cs8(p->buf), "#if ", NULL)
+	    ||  strstart(cs8(p->buf), "#define", NULL)
+	    ||  strstart(cs8(p->buf), "#pragma", NULL)) {
             return 50;
         }
     }
@@ -1413,8 +1408,8 @@ static int cpp_mode_probe(ModeDef *mode, ModeProbeData *p)
     score = c_mode_probe(&c_mode, p);
     if (score > 5) {
         if (strstr(cs8(p->buf), "namespace")
-        ||  strstr(cs8(p->buf), "class")
-        ||  strstr(cs8(p->buf), "::")) {
+	    ||  strstr(cs8(p->buf), "class")
+	    ||  strstr(cs8(p->buf), "::")) {
             return score + 5;
         }
         return score - 5;
@@ -1489,8 +1484,7 @@ static int objc_mode_probe(ModeDef *mode, ModeProbeData *mp)
         /* favor Objective C over Limbo for .m extension
          * if file is empty, starts with a comment or a #import
          */
-        if (*p == '/' || *p == '\0'
-        ||  strstart(p, "#import", NULL)) {
+        if (*p == '/' || *p == '\0' ||  strstart(p, "#import", NULL)) {
             return 81;
         } else {
             return 80;
@@ -1503,7 +1497,7 @@ static int objc_mode_probe(ModeDef *mode, ModeProbeData *mp)
         const char *q;
         for (q = p;; q++) {
             if ((*q == '@' && qe_isalpha(q[1]))
-            ||  (*q == '#' && strstart(p, "#import", NULL))) {
+	        ||  (*q == '#' && strstart(p, "#import", NULL))) {
                 return 85;
             }
             q = strchr(q, '\n');
@@ -1753,15 +1747,14 @@ static void js_colorize_line(QEColorizeContext *cp,
                     }
                 }
                 break;
-            } else
-            if (str[i] == '/') {
-                /* line comment */
-            parse_comment1:
-                style = C_STYLE_COMMENT;
-                state |= IN_C_COMMENT1;
-                i = n;
-                break;
-            }
+            } else if (str[i] == '/') {
+		/* line comment */
+	    parse_comment1:
+		style = C_STYLE_COMMENT;
+		state |= IN_C_COMMENT1;
+		i = n;
+		break;
+	    }
             /* XXX: should use more context to tell regex from divide */
             prev = ' ';
             for (i1 = start; i1 > indent; ) {
@@ -1786,24 +1779,22 @@ static void js_colorize_line(QEColorizeContext *cp,
                         if (i < n) {
                             i += 1;
                         }
-                    } else
-                    if (state & IN_C_CHARCLASS) {
-                        if (c == ']') {
-                            state &= ~IN_C_CHARCLASS;
-                        }
-                        /* ECMA 5: ignore '/' inside char classes */
-                    } else {
-                        if (c == '[') {
-                            state |= IN_C_CHARCLASS;
-                        } else
-                        if (c == delim) {
-                            while (qe_isalnum_(str[i])) {
-                                i++;
-                            }
-                            state &= ~IN_C_REGEX;
-                            break;
-                        }
-                    }
+                    } else if (state & IN_C_CHARCLASS) {
+			if (c == ']') {
+			    state &= ~IN_C_CHARCLASS;
+			}
+			/* ECMA 5: ignore '/' inside char classes */
+		    } else {
+			if (c == '[') {
+			    state |= IN_C_CHARCLASS;
+			} else if (c == delim) {
+			    while (qe_isalnum_(str[i])) {
+				i++;
+			    }
+			    state &= ~IN_C_REGEX;
+			    break;
+			}
+		    }
                 }
                 break;
             }
@@ -1848,11 +1839,10 @@ static void js_colorize_line(QEColorizeContext *cp,
                     if (i >= n)
                         break;
                     i++;
-                } else
-                if (c == delim) {
-                    state &= ~(IN_C_STRING | IN_C_STRING_Q);
-                    break;
-                }
+                } else if (c == delim) {
+			state &= ~(IN_C_STRING | IN_C_STRING_Q);
+			break;
+		    }
             }
             break;
         case '=':
@@ -1890,8 +1880,8 @@ static void js_colorize_line(QEColorizeContext *cp,
 
                 /* keywords used as object property tags are regular identifiers */
                 if (strfind(syn->keywords, kbuf) &&
-                    // XXX: this is incorrect for `default` inside a switch statement */
-                    str[i] != ':' && (start == 0 || str[start - 1] != '.')) {
+		    // XXX: this is incorrect for `default` inside a switch statement */
+		    str[i] != ':' && (start == 0 || str[start - 1] != '.')) {
                     style = C_STYLE_KEYWORD;
                     break;
                 }
@@ -1906,27 +1896,27 @@ static void js_colorize_line(QEColorizeContext *cp,
                     if (tag) {
                         /* tag function definition */
                         eb_add_property(cp->b, cp->offset + start,
-                                        QE_PROP_TAG, qe_strdup(kbuf));
+			                QE_PROP_TAG, qe_strdup(kbuf));
                         tag = 0;
                     }
                     break;
-                } else
-                if (tag && qe_findchar("(,;=", str[i1])) {
-                    /* tag variable definition */
-                    eb_add_property(cp->b, cp->offset + start,
-                                    QE_PROP_TAG, qe_strdup(kbuf));
-                }
+                } else if (tag && qe_findchar("(,;=", str[i1])) {
+			/* tag variable definition */
+			eb_add_property(cp->b, cp->offset + start,
+			                QE_PROP_TAG, qe_strdup(kbuf));
+		    }
 
                 if ((start == 0 || str[start - 1] != '.')
-                &&  !qe_findchar(".(:", str[i])
-                &&  strfind(syn->types, kbuf)) {
+		    &&  !qe_findchar(".(:", str[i])
+		    &&  strfind(syn->types, kbuf)) {
                     /* if not cast, assume type declaration */
                     //type_decl = 1;
                     style = C_STYLE_TYPE;
                     break;
                 }
                 if (qe_isupper((unsigned char)kbuf[0])
-                &&  (start >= 2 && str[start - 1] == ' ' && str[start - 2] == ':')) {
+		    &&  (start >= 2 && str[start - 1] == ' '
+		         && str[start - 2] == ':')) {
                     /* if type annotation and capitalized assume type name */
                     style = C_STYLE_TYPE;
                     break;
@@ -1942,7 +1932,7 @@ static void js_colorize_line(QEColorizeContext *cp,
             style = 0;
         }
     }
- the_end:
+the_end:
     if (state & (IN_C_COMMENT | IN_C_COMMENT1 | IN_C_STRING | IN_C_STRING_Q)) {
         /* set style on eol char */
         SET_COLOR1(str, n, style);
@@ -2015,7 +2005,7 @@ ModeDef ts_mode = {
    '''
    """
    numeric: /0[Xx][A-Fa-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:[Ee][-+]?\d+|[FfDdL]|UL)?/
- */
+*/
 
 static const char jspp_keywords[] = {
     // JavaScript keywords
@@ -2080,7 +2070,7 @@ ModeDef jspp_mode = {
    block comment: / * ... * / (nested)
    line directive: # ...
    identifier: [a-zA-Z][a-zA-Z0-9_]+ embedded -, trailing [?]? and [']*
- */
+*/
 
 static const char koka_keywords[] = {
     "fun|function|"
@@ -2623,7 +2613,7 @@ static ModeDef idl_mode = {
     .extensions = "idl",
     .colorize_func = c_colorize_line,
     .colorize_flags = CLANG_IDL | CLANG_PREPROC | CLANG_WLITERALS |
-                      CLANG_REGEX | CLANG_CAP_TYPE,
+    CLANG_REGEX | CLANG_CAP_TYPE,
     .keywords = idl_keywords,
     .types = idl_types,
     .indent_func = c_indent_line,
@@ -2706,11 +2696,11 @@ static const char qs_types[] = {
 static int qs_mode_probe(ModeDef *mode, ModeProbeData *p)
 {
     if (match_extension(p->filename, mode->extensions)
-    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
+        ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
         return 80;
     }
     if (!strcmp(p->filename, ".qerc")
-    ||  strstr(p->real_filename, "/.qe/config"))
+        ||  strstr(p->real_filename, "/.qe/config"))
         return 80;
 
     return 1;
@@ -2896,11 +2886,11 @@ static const char scilab_types[] = {
 static int scilab_mode_probe(ModeDef *mode, ModeProbeData *p)
 {
     if (match_extension(p->filename, mode->extensions)
-    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
+        ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
         return 80;
     }
     if (match_extension(p->filename, "start|quit")
-    &&  (p->buf[0] == '/' && p->buf[1] == '/')) {
+        &&  (p->buf[0] == '/' && p->buf[1] == '/')) {
         return 80;
     }
     return 1;
@@ -3017,7 +3007,7 @@ static ModeDef vala_mode = {
     .extensions = "vala|vapi",
     .colorize_func = c_colorize_line,
     .colorize_flags = CLANG_VALA | CLANG_CC | CLANG_REGEX |
-                      CLANG_CAP_TYPE | CLANG_STR3,
+    CLANG_CAP_TYPE | CLANG_STR3,
     .keywords = vala_keywords,
     .types = vala_types,
     .indent_func = c_indent_line,
@@ -3051,7 +3041,7 @@ static int pawn_mode_probe(ModeDef *mode, ModeProbeData *p)
 
     if (match_extension(p->filename, mode->extensions)) {
         /* disambiguate .p extension, can be Pascal too. */
-#define NUL  "\0"
+	#define NUL  "\0"
         static const char pawn_checks[] =
             "@" NUL "//" NUL "/*" NUL
             "#include" NUL "#define" NUL "#if" NUL
@@ -3131,12 +3121,12 @@ static ModeDef cminus_mode = {
    a = 0xB3; // hexadecimal
    a = 0b10110011; // binary
    myRect = CreateRect(0, 0, 5, 10); // Construct a table that describes
-                                     // a rectangle
+   // a rectangle
    area = myRect.Area(); // myRect is automatically assigned to 'this'
-                         // within the area method.
+   // within the area method.
    Size = function() { return .width * .height; };
    s = myRect:Size(); // Calls Size function passing 'myRect' as 'this'
- */
+*/
 
 static const char gmscript_keywords[] = {
     "if|else|for|while|foreach|in|and|or|function|"
@@ -3168,7 +3158,7 @@ static ModeDef gmscript_mode = {
 
    XXX: block comments **do** nest!
 
- */
+*/
 
 static const char wren_keywords[] = {
     "break|class|construct|else|false|for|foreign|if|import|"
@@ -3196,7 +3186,7 @@ static ModeDef wren_mode = {
 
 /* Simple object oriented language with C like syntax
    see https://www.nand2tetris.org/ for details
- */
+*/
 
 static const char jack_keywords[] = {
     "class|constructor|method|function|"

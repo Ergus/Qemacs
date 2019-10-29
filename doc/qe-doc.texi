@@ -153,6 +153,8 @@ C-i                     : tabulate
 C-q                     : quoted-insert
 RET                     : newline
 C-o                     : open-line
+M-m                     : goto-indentation
+M-l                     : recenter-top-bottom
 @end example
 
 @section Region handling, kill commands
@@ -261,7 +263,7 @@ C-x C-n                 : next-error
 
 @example
 C-x C-c                 : exit-qemacs
-C-l                     : refresh
+C-l                     : recenter-top-bottom
 M-g                     : goto-line
 C-x g                   : goto-char
 C-x l                   : count-lines

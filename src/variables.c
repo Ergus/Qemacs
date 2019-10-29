@@ -155,9 +155,8 @@ void variable_complete(CompleteState *cp)
     QEmacsState *qs = cp->s->qe_state;
     const VarDef *vp;
 
-    for (vp = qs->first_variable; vp; vp = vp->next) {
+    for (vp = qs->first_variable; vp; vp = vp->next)
         complete_test(cp, vp->name);
-    }
 }
 
 QVarType qe_get_variable(EditState *s, const char *name,
