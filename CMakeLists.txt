@@ -26,6 +26,7 @@ option (ENABLE-CYGWIN "compile for cygwin systems" OFF)
 
 include (CMakeDependentOption)
 include (GNUInstallDirs)
+include (CheckFunctionExists)
 
 cmake_dependent_option(ENABLE_X11
   "Enable Xwindow support" ON "NOT ENABLE_TINY" OFF)
@@ -83,6 +84,14 @@ if (ENABLE_TINY)
 else ()
   set (CONFIG_ALL_KMAPS true)
   set (CONFIG_UNICODE_JOIN true)
+
+  if (ENABLE_PLUGINS AND CMAKE_DL_LIBS)
+    set (CONFIG_DLL true)
+    set (LIBS ${LIBS} ${CMAKE_DL_LIBS})
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -rdynamic")
+  endif ()
+
 endif ()
 
 set (CMAKE_C_FLAGS_RELEASE
@@ -106,10 +115,12 @@ if (ENABLE_PNG)
   endif ()
 endif ()
 
+CHECK_FUNCTION_EXISTS(mmap CONFIG_MMAP)
+
+
 if (WIN32)
   set (CONFIG_WIN32 true)
   set (CONFIG_INIT_CALLS false)
-  set (CONFIG_MMAP false)
   set (CONFIG_UNLOCKIO false)
 
   if (${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
@@ -119,9 +130,7 @@ if (WIN32)
 else ()
   set (CONFIG_INIT_CALLS true)
   set (CONFIG_NETWORK true)
-  set (CONFIG_MMAP true)
   set (CONFIG_UNLOCKIO true)
-  set (CONFIG_PLUGINS ${ENABLE_PLUGINS})
 
   set (SOURCES ${SOURCES} unix.c tty.c)
   set (LIBS ${LIBS} m)
@@ -134,7 +143,6 @@ else ()
     set (CONFIG_DARWIN true)
     set (CONFIG_INIT_CALLS false)
     set (CONFIG_UNLOCKIO true)
-    set (CONFIG_PLUGINS false)
   elseif (CMAKE_SYSTEM_NAME STREQUAL Haiku)
     set (CONFIG_HAIKU true)
     set (CONFIG_UNLOCKIO false)
@@ -146,7 +154,6 @@ else ()
     set (CONFIG_BSD true)
     set (CONFIG_UNLOCKIO false)
     set (CONFIG_PTSNAME false)
-    set (CONFIG_PLUGINS false)
   endif ()
 
   if (ENABLE_X11)
@@ -192,13 +199,6 @@ else ()
 	endif ()
       endif ()
     endif ()
-  endif ()
-
-  if (CONFIG_PLUGINS)
-    set (CONFIG_DLL true)
-    set (LIBS ${LIBS} ${CMAKE_DL_LIBS})
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -rdynamic")
   endif ()
 
 endif ()
