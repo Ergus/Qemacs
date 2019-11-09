@@ -21,10 +21,7 @@
 #include <stdlib.h>
 #include "qe.h"
 
-#ifdef CONFIG_INIT_CALLS
-
 /* add empty pointers at the end of init and cleanup sections */
 static int (*qe__initcall_end)(void) qe__init_call = NULL;
 static void (*qe__exitcall_end)(void) qe__exit_call = NULL;
 
-#endif

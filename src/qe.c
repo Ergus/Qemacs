@@ -6976,18 +6976,18 @@ void do_switch_to_buffer(EditState *s, const char *bufname)
 void do_switch_next_prev_buffer(EditState *s, int key)
 {
     if (key == KEY_CTRL_RIGHT) // Next buffer
-	switch_to_buffer(s,
-	                 s->b->next ? s->b->next : s->qe_state->first_buffer);
+        switch_to_buffer(s,
+		                 s->b->next ? s->b->next : s->qe_state->first_buffer);
     else if (key == KEY_CTRL_LEFT) { // Previous buffer
-	EditBuffer *b;
-	for (b = s->qe_state->first_buffer; b != NULL; b = b->next) {
-	    if (b->next == s->b) {
-		switch_to_buffer(s, b);
-		return;
-	    } else if (b->next == NULL && s->b == s->qe_state->first_buffer) {
-		switch_to_buffer(s, b);
-	    }
-	}
+        EditBuffer *b;
+        for (b = s->qe_state->first_buffer; b != NULL; b = b->next) {
+            if (b->next == s->b) {
+                switch_to_buffer(s, b);
+                return;
+            } else if (b->next == NULL && s->b == s->qe_state->first_buffer) {
+                switch_to_buffer(s, b);
+            }
+        }
     }
 }
 

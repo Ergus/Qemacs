@@ -67,7 +67,7 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst,
     /* simplistic command line parser */
     p = command_line;
     count = 0;
-    for (;;) {
+    white (1) {
         skip_spaces((const char **)&p);
         if (*p == '\0')
             break;
@@ -82,7 +82,7 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst,
 
     argc = 0;
     p = command_line;
-    for (;;) {
+    while (1) {
         skip_spaces((const char **)&p);
         if (*p == '\0')
             break;
