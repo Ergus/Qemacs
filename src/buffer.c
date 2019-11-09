@@ -1992,19 +1992,17 @@ static int raw_buffer_load(EditBuffer *b, FILE *f)
     struct stat st;
 
     /* TODO: Should produce error messages */
-
     if (stat(b->filename, &st))
         return -1;
 
 #ifdef CONFIG_MMAP
-    if (st.st_size >= qs->mmap_threshold) {
-        if (!eb_mmap_buffer(b, b->filename))
-            return 0;
-    }
+    if (st.st_size >= qs->mmap_threshold
+        && !eb_mmap_buffer(b, b->filename))
+        return 0;
 #endif
-    if (st.st_size <= qs->max_load_size) {
+    if (st.st_size <= qs->max_load_size)
         return eb_raw_buffer_load1(b, f, 0);
-    }
+
     return -1;
 }
 

@@ -320,9 +320,9 @@ static int qe_register_binding1(unsigned int *keys, int nb_keys,
         return -1;
     p->cmd = d;
     p->nb_keys = nb_keys;
-    for (i = 0; i < nb_keys; i++) {
+    for (i = 0; i < nb_keys; i++)
         p->keys[i] = keys[i];
-    }
+
     lp = m ? &m->first_key : &qs->first_key;
     /* Bindings must be prepended to override previous bindings */
     /* XXX: should avoid multiple redundant bindings */
@@ -338,24 +338,20 @@ static int qe_register_binding1(unsigned int *keys, int nb_keys,
 /* convert compressed mappings to real ones */
 static int qe_register_binding2(int key, CmdDef *d, ModeDef *m)
 {
-    int nb_keys;
+    int nb_keys = 0;
     unsigned int keys[3];
 
-    nb_keys = 0;
     if (key >= KEY_CTRLX(0) && key <= KEY_CTRLX(0xff)) {
         keys[nb_keys++] = KEY_CTRL('x');
         keys[nb_keys++] = key & 0xff;
-    } else
-    if (key >= KEY_CTRLXRET(0) && key <= KEY_CTRLXRET(0xff)) {
+    } else if (key >= KEY_CTRLXRET(0) && key <= KEY_CTRLXRET(0xff)) {
         keys[nb_keys++] = KEY_CTRL('x');
         keys[nb_keys++] = KEY_RET;
         keys[nb_keys++] = key & 0xff;
-    } else
-    if (key >= KEY_CTRLH(0) && key <= KEY_CTRLH(0xff)) {
+    } else if (key >= KEY_CTRLH(0) && key <= KEY_CTRLH(0xff)) {
         keys[nb_keys++] = KEY_CTRL('h');
         keys[nb_keys++] = key & 0xff;
-    } else
-    if (key >= KEY_CTRLC(0) && key <= KEY_CTRLC(0xff)) {
+    } else if (key >= KEY_CTRLC(0) && key <= KEY_CTRLC(0xff)) {
         keys[nb_keys++] = KEY_CTRL('c');
         keys[nb_keys++] = key & 0xff;
     } else {
@@ -393,7 +389,7 @@ void qe_register_cmd_table(CmdDef *cmds, ModeDef *m)
     /* add default bindings */
     for (d = cmds; d->name != NULL; d++) {
         if (d->key == KEY_CTRL('x') || d->key == KEY_CTRL('c')
-        ||  d->key == KEY_ESC) {
+	    ||  d->key == KEY_ESC) {
             unsigned int keys[2];
             keys[0] = d->key;
             keys[1] = d->alt_key;
@@ -5564,7 +5560,7 @@ KeyDef *qe_find_binding(unsigned int *keys, int nb_keys, KeyDef *kd)
 {
     for (; kd != NULL; kd = kd->next) {
         if (kd->nb_keys >= nb_keys
-        &&  !memcmp(kd->keys, keys, nb_keys * sizeof(keys[0]))) {
+		    && !memcmp(kd->keys, keys, nb_keys * sizeof(keys[0]))) {
             break;
         }
     }
