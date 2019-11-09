@@ -27,7 +27,12 @@ __attribute((weak, visibility("hidden")))
 #cmakedefine CONFIG_INIT_CALLS 1
 #cmakedefine CONFIG_HTML 1
 #cmakedefine CONFIG_DLL 1
-#cmakedefine CONFIG_UNLOCKIO 1
+
+/* Unlocked IO Functions available */
+#cmakedefine CONFIG_UNLOCK_PUTC 1
+#cmakedefine CONFIG_UNLOCK_FWRITE 1
+#cmakedefine CONFIG_UNLOCK_FPUTS 1
+
 #cmakedefine CONFIG_CYGWIN 1
 #cmakedefine CONFIG_NETWORK 1
 #cmakedefine CONFIG_MMAP 1
