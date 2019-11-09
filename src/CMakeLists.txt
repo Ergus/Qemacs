@@ -153,7 +153,8 @@ add_custom_command (
   DEPENDS ligtoqe unifont.lig
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_target(makelig ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/ligatures")
-install (FILES "${CMAKE_CURRENT_BINARY_DIR}/ligatures" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
+install (FILES "${CMAKE_CURRENT_BINARY_DIR}/ligatures"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
 
 add_executable (kmaptoqe kmaptoqe.c cutils.c)
 file (GLOB kmaps_in kmap/*.kmap)
@@ -162,5 +163,6 @@ add_custom_command(
   COMMAND kmaptoqe "${PROJECT_BINARY_DIR}/kmaps" ${kmaps_in}
   DEPENDS kmaptoqe ${kmaps_in})
 add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
-install (FILES "${PROJECT_BINARY_DIR}/kmaps" DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
+install (FILES "${PROJECT_BINARY_DIR}/kmaps"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
 
