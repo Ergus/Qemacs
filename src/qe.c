@@ -5782,11 +5782,11 @@ static void eb_format_message(QEmacsState *qs, const char *bufname,
         buf_printf(out, "%s: ", qs->ec.function);
 
     eb = eb_find_new(bufname, BF_UTF8);
-    if (eb) {
+
+    if (eb)
         eb_printf(eb, "%s%s\n", header, message);
-    } else {
+    else
         fprintf(stderr, "%s%s\n", header, message);
-    }
 }
 
 void put_error(qe__unused__ EditState *s, const char *fmt, ...)
@@ -6008,23 +6008,23 @@ static void edit_attach(EditState *s, EditState *e)
 static void compute_client_area(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
-    int x1, y1, x2, y2;
+    int x1 = s->x1,
+        y1 = s->y1,
+        x2 = s->x2,
+        y2 = s->y2;
 
-    x1 = s->x1;
-    y1 = s->y1;
-    x2 = s->x2;
-    y2 = s->y2;
     if (s->flags & WF_MODELINE)
         y2 -= qs->mode_line_height;
+
     if (s->flags & WF_POPUP) {
-	if (s->flags & WF_LEFT)
-	    x1 += qs->border_width;
-	if (s->flags & WF_RIGHT)
-	    x2 -= qs->border_width;
-	if (s->flags & WF_TOP)
-	    y1 += s->caption.text ? qs->mode_line_height : qs->border_width;
-	if (s->flags & WF_BOTTOM)
-	    y2 -= qs->border_width;
+        if (s->flags & WF_LEFT)
+            x1 += qs->border_width;
+        if (s->flags & WF_RIGHT)
+            x2 -= qs->border_width;
+        if (s->flags & WF_TOP)
+            y1 += s->caption.text ? qs->mode_line_height : qs->border_width;
+        if (s->flags & WF_BOTTOM)
+            y2 -= qs->border_width;
     }
     if (s->flags & WF_RSEPARATOR)
         x2 -= qs->separator_width;
