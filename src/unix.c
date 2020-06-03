@@ -214,7 +214,7 @@ static inline int check_timers(int max_delay)
     cur_time = get_clock_ms();
     timeout = cur_time + max_delay;
     pt = &first_timer;
-    for (;;) {
+    while (true) {
         ti = *pt;
         if (ti == NULL)
             break;
@@ -292,7 +292,7 @@ static void url_block(void)
 
 #ifndef CONFIG_WIN32
     /* handle terminated children */
-    for (;;) {
+    while (true) {
         int pid, status;
         PidHandler *ph, *ph1;
 
@@ -316,7 +316,7 @@ void url_main_loop(void (*init)(void *opaque), void *opaque)
 {
     url_block_reset();
     (*init)(opaque);
-    while (1) {
+    while (true) {
         if (url_exit_request)
             break;
         url_block();

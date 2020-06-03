@@ -5824,17 +5824,14 @@ void put_status(EditState *s, const char *fmt, ...)
     }
 
     for (p = buf;; p++) {
-        if (*p == '|') {
+        if (*p == '|')
             diag = 1;
-        } else
-        if (*p == '~') {
+        else if (*p == '~')
             silent = 1;
-        } else
-        if (*p == '!') {
+        else if (*p == '!')
             force = 1;
-        } else {
+        else
             break;
-        }
     }
 
     if (!qs->screen->dpy.dpy_probe) {
@@ -5941,10 +5938,9 @@ void switch_to_buffer(EditState *s, EditBuffer *b)
         /* validate the mode */
         if (!mode)
             mode = b->default_mode;
-        if (!mode) {
-            /* default mode */
+        if (!mode) /* default mode */
             mode = &text_mode;
-        }
+
         /* initialize the mode */
         edit_set_mode(s, mode);
     }
@@ -6054,9 +6050,8 @@ EditState *edit_new(EditBuffer *b,
 {
     /* b may be NULL ??? */
     QEmacsState *qs = &qe_state;
-    EditState *s, *e;
+    EditState *s = qe_mallocz(EditState), *e;
 
-    s = qe_mallocz(EditState);
     if (!s)
         return NULL;
 

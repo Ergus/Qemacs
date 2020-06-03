@@ -37,6 +37,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #ifdef HAVE_QE_CONFIG_H
 #include "config.h"
