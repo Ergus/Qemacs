@@ -32,7 +32,7 @@ endif ()
 
 set (SOURCES
   qe.c util.c cutils.c charset.c buffer.c search.c
-  input.c display.c hex.c list.c)
+  input.c display.c hex.c list.c container.c)
 
 if (ENABLE_TINY)
   set (QE_DEFINITION "CONFIG_TINY")

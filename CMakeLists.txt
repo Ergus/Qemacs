@@ -241,3 +241,6 @@ set (CPACK_PACKAGE_HOMEPAGE_URL "https://bellard.org/qemacs/")
 set (CPACK_RPM_PACKAGE_GROUP "Editors")
 
 include(CPack)
+
+enable_testing ()
+add_subdirectory (tests)
