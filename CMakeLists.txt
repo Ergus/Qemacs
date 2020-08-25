@@ -236,5 +236,5 @@ set (CPACK_RPM_PACKAGE_GROUP "Editors")
 
 include(CPack)
 
-# enable_testing ()
-# add_subdirectory (tests)
+enable_testing ()
+add_subdirectory (tests)

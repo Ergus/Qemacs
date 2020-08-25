@@ -38,7 +38,7 @@
     /* If value is set in the position or null */                       \
     /* A pointer to the pos element is always returned */               \
     /* The element is not initialized */                                \
-    T** list_##T##_insert(list_##T *in, T *value, size_t pos)            \
+    T** list_##T##_insert(list_##T *in, T *value, size_t pos)           \
     {                                                                   \
         size_t idx = in->count;                                         \
                                                                         \
@@ -46,7 +46,7 @@
         if (in->count + 1 >= in->max_size) {                            \
             assert(in->max_size * 2 > in->max_size);                    \
             in->max_size *= 2;                                          \
-            in->list = qe_realloc(in->list, in->max_size * sizeof(T*)); \
+            in->list = qe_realloc(&(in->list), in->max_size * sizeof(T*)); \
             if (!in->list)                                              \
                 return NULL;                                            \
         }                                                               \
@@ -83,7 +83,7 @@
     }                                                                   \
                                                                         \
     int list_##T##_size(list_##T *in) {return in->count;}               \
-    int list_##T##_max_size(list_##T *in) {return in->max_size;}       \
+    int list_##T##_max_size(list_##T *in) {return in->max_size;}        \
                                                                         \
     void list_##T##_free(list_##T *in)                                  \
     {                                                                   \
@@ -102,7 +102,7 @@
         return list_##T##_remove_(in, pos, false);                      \
     }                                                                   \
                                                                         \
-    T* list_##T##_drop(list_##T *in, size_t pos)                          \
+    T* list_##T##_drop(list_##T *in, size_t pos)                        \
     {                                                                   \
         return list_##T##_remove_(in, pos, true);                       \
     }                                                                   \
@@ -121,7 +121,7 @@
     T** list_##T##_push(list_##T *in, T *value)                         \
     {                                                                   \
         const size_t last = list_##T##_size(in);                        \
-        return list_##T##_insert(in, value, last);                        \
+        return list_##T##_insert(in, value, last);                      \
     }                                                                   \
                                                                         \
     T** list_##T##_next(list_##T *in, T **it) {                         \

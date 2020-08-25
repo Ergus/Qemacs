@@ -30,7 +30,7 @@ foreach(file ${TINY_SOURCES})
   endif()
 endforeach()
 
-add_executable (test_container test_container.c "${SOURCES}")
-target_compile_definitions (test_container PRIVATE "CONFIG_LIB_MODE")
+add_executable (test_container test_container.c )
+target_link_libraries(test_container lqemacs)
 
 add_test(NAME Test_Container COMMAND test_container)

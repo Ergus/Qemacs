@@ -34,7 +34,7 @@ set (SOURCES
   qe.c util.c cutils.c charset.c buffer.c search.c
   input.c display.c hex.c list.c container.c)
 
-set (TINY_SOURCES "${SOURCES}" parser.c PARENT_SCOPE)
+set (TINY_SOURCES "${SOURCES}" parser.c)
 
 if (ENABLE_TINY)
   set (QE_DEFINITION "CONFIG_TINY")
@@ -108,6 +108,7 @@ function (make_modules output)
   add_dependencies(${targetname} CHARSET)
 endfunction ()
 
+# Target executable
 set (MODULES "${CMAKE_CURRENT_BINARY_DIR}/modules.txt")
 make_modules (MODULES "${SOURCES}")
 add_executable (qemacs "${SOURCES}")
@@ -115,6 +116,12 @@ add_dependencies (qemacs CHARSET MODULES)
 target_link_libraries (qemacs ${LIBS})
 target_compile_definitions (qemacs PRIVATE ${QE_DEFINITION})
 install(TARGETS qemacs DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_library(lqemacs SHARED ${TINY_SOURCES})
+target_link_libraries (lqemacs ${LIBS})
+target_compile_definitions (lqemacs PRIVATE ${QE_DEFINITION} )
+install(TARGETS lqemacs DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 
 # Extra files
 
