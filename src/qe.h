@@ -22,6 +22,7 @@
 #ifndef QE_H
 #define QE_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
@@ -109,9 +110,10 @@ void *qe_realloc(void *pp, size_t size);
 #define qe_malloc_hack(t, n)    ((t *)qe_malloc_bytes(sizeof(t) + (n)))
 #define qe_mallocz_hack(t, n)   ((t *)qe_mallocz_bytes(sizeof(t) + (n)))
 #ifdef CONFIG_HAS_TYPEOF
-#define qe_free(pp)    do { typeof(**(pp)) **__ = (pp); (free)(*__); *__ = NULL; } while (0)
+#define qe_free(pp)                                                     \
+    do { typeof(**(pp)) **__ = (pp); (free)(*__); *__ = NULL; } while (0)
 #else
-#define qe_free(pp)    \
+#define qe_free(pp)                                                     \
     do if (sizeof(**(pp)) >= 0) { void *_ = (pp); (free)(*(void **)_); *(void **)_ = NULL; } while (0)
 #endif
 
@@ -2420,5 +2422,7 @@ EditBuffer *new_shell_buffer(EditBuffer *b0, EditState *e,
                              const char *cmd, int shell_flags);
 
 #define QASSERT(e)      do { if (!(e)) fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e); } while (0)
+
+#include "container.h"
 
 #endif

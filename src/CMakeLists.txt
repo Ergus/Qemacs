@@ -34,9 +34,11 @@ set (SOURCES
   qe.c util.c cutils.c charset.c buffer.c search.c
   input.c display.c hex.c list.c container.c)
 
+set (TINY_SOURCES "${SOURCES}" parser.c PARENT_SCOPE)
+
 if (ENABLE_TINY)
   set (QE_DEFINITION "CONFIG_TINY")
-  set (SOURCES ${SOURCES} parser.c)
+  set (SOURCES ${TINY_SOURCES})
 else ()
   set (SOURCES ${SOURCES}
     qescript.c extras.c variables.c fractal.c charsetjis.c ${CHARSETMORE})
@@ -78,8 +80,8 @@ else ()
   endif ()
 
   if (ENABLE_X11 AND X11_FOUND)
-      set (SOURCES ${SOURCES} x11.c)
-      set (LIBS ${LIBS} ${QE_X11})
+    set (SOURCES ${SOURCES} x11.c)
+    set (LIBS ${LIBS} ${QE_X11})
   endif ()
 
   if (CONFIG_INIT_CALLS)
@@ -165,4 +167,3 @@ add_custom_command(
 add_custom_target(makekmaps ALL DEPENDS "${PROJECT_BINARY_DIR}/kmaps")
 install (FILES "${PROJECT_BINARY_DIR}/kmaps"
   DESTINATION "${CMAKE_INSTALL_DATADIR}/qe")
-

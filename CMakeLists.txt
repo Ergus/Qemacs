@@ -133,19 +133,13 @@ else ()
   set (CONFIG_INIT_CALLS true)
   set (CONFIG_NETWORK true)
 
-  set (SOURCES ${SOURCES} unix.c tty.c)
   set (LIBS ${LIBS} m)
-
-  if (NOT ENABLE_TINY)
-    set (SOURCES ${SOURCES} shell.c dired.c latex-mode.c archive.c)
-  endif ()
 
   if (APPLE)
     set (CONFIG_DARWIN true)
     set (CONFIG_INIT_CALLS false)
   elseif (CMAKE_SYSTEM_NAME STREQUAL Haiku)
     set (CONFIG_HAIKU true)
-    set (SOURCES ${SOURCES} haiku.cpp)
     set (CONFIG_HTML ${ENABLE_HTML})
     set (ENABLE_X11 false)
     set (LIBS ${LIBS} network be stdc++)
@@ -242,5 +236,5 @@ set (CPACK_RPM_PACKAGE_GROUP "Editors")
 
 include(CPack)
 
-enable_testing ()
-add_subdirectory (tests)
+# enable_testing ()
+# add_subdirectory (tests)

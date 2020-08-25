@@ -9458,11 +9458,8 @@ static void qe_init(void *opaque)
     qs->ec.function = NULL;
 }
 
-#ifdef CONFIG_WIN32
-int main1(int argc, char **argv)
-#else
+#ifndef CONFIG_LIB_MODE
 int main(int argc, char **argv)
-#endif
 {
     QEArgs args;
 
@@ -9533,3 +9530,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+#endif // CONFIG_LIB_MODE
