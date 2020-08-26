@@ -214,8 +214,7 @@ static int tty_dpy_init(QEditScreen *s,
             ts->term_code = TERM_CYGWIN;
             ts->term_flags |= KBS_CONTROL_H |
                               USE_BOLD_AS_BRIGHT_FG | USE_BLINK_AS_BRIGHT_BG;
-        } else
-        if (strstart(ts->term_name, "tw100", NULL)) {
+        } else if (strstart(ts->term_name, "tw100", NULL)) {
             ts->term_code = TERM_TW100;
             ts->term_flags |= KBS_CONTROL_H |
                               USE_BOLD_AS_BRIGHT_FG | USE_BLINK_AS_BRIGHT_BG;

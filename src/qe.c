@@ -4486,22 +4486,23 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
 
     /* line numbers */
     if (ds->line_numbers) {
-	ds->style = (s->bools.get.hl_current_line_number &&
-	             s->offset >= offset &&
-	             s->offset < offset0)
-		? QE_STYLE_CURRENT_LINUM : QE_STYLE_LINUM;
+        const int save = ds->style;
+        ds->style = (s->bools.get.hl_current_line_number &&
+		             s->offset >= offset &&
+		             s->offset < offset0)
+            ? QE_STYLE_CURRENT_LINUM : QE_STYLE_LINUM;
         display_printf(ds, -1, -1, "%7d ", line_num + 1);
-        ds->style = QE_STYLE_DEFAULT;
+        ds->style = save;
     }
 
     ds->eol_style = ds->style;
 #if 1
     /* colorize regions */
     if (s->bools.get.hl_current_line
-        || s->region_style != QE_STYLE_DEFAULT) {
+	    || s->region_style != QE_STYLE_DEFAULT) {
         /* CG: Should combine styles instead of replacing */
         if (s->region_style != QE_STYLE_DEFAULT
-	    && !s->bools.get.hl_current_line) {
+		    && !s->bools.get.hl_current_line) {
 
             int line, start_offset, end_offset;
             int i, start_char, end_char;
@@ -4518,22 +4519,22 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                 eb_get_pos(s->b, &line, &start_char, start_offset);
                 if (end_offset >= offset0) {
                     end_char = colored_nb_chars;
-		    ds->eol_style = s->region_style;
-		} else {
+                    ds->eol_style = s->region_style;
+                } else {
                     eb_get_pos(s->b, &line, &end_char, end_offset);
-		}
+                }
 
                 for (i = start_char; i < end_char; i++) {
                     sbuf[i] = s->region_style;
                 }
             }
         } else if (s->bools.get.hl_current_line &&
-	           s->offset >= offset &&
-	           s->offset < offset0) {
+		           s->offset >= offset &&
+		           s->offset < offset0) {
             /* XXX: only if qs->active_window == s ? */
-            for (i = 0; i < colored_nb_chars; i++)
+            for (i = 0; i < colored_nb_chars; i++) 
                 sbuf[i] = QE_STYLE_CURRENT_LINE;
-	    ds->eol_style = QE_STYLE_CURRENT_LINE;
+            ds->eol_style = QE_STYLE_CURRENT_LINE;
         }
     }
 #endif
@@ -4550,8 +4551,8 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
             offset = -1; /* signal end of text */
             break;
         } else {
-	    ds->style = (char_index < colored_nb_chars) ?
-	                 sbuf[char_index] : QE_STYLE_DEFAULT;
+            ds->style = (char_index < colored_nb_chars) ?
+                sbuf[char_index] : QE_STYLE_DEFAULT;
 
             c = eb_nextc(s->b, offset, &offset);
             if (c == '\n' && !(s->flags & WF_MINIBUF)) {
@@ -4569,18 +4570,19 @@ int text_display_line(EditState *s, DisplayState *ds, int offset)
                     c = '\n';
                 display_printf(ds, offset0, offset, "^%c", ('@' + c) & 127);
             } else if (c >= 128
-	               &&  (s->qe_state->show_unicode == 1
-		            || c == 0xfeff   /* Display BOM as \uFEFF to make it explicit */
-		            || c > MAX_UNICODE_DISPLAY
-		            || (c < 160 && s->b->charset == &charset_raw))) {
+			           &&  (s->qe_state->show_unicode == 1
+					        || c == 0xfeff   /* Display BOM as \uFEFF to make it explicit */
+					        || c > MAX_UNICODE_DISPLAY
+					        || (c < 160
+							    && s->b->charset == &charset_raw))) {
                 /* display unsupported unicode code points as hex */
                 if (c > 0xffff) {
                     display_printf(ds, offset0, offset, "\\U%08x", c);
                 } else if (c > 0xff) {
-			display_printf(ds, offset0, offset, "\\u%04x", c);
-		} else {
-		    display_printf(ds, offset0, offset, "\\x%02x", c);
-		}
+                    display_printf(ds, offset0, offset, "\\u%04x", c);
+                } else {
+                    display_printf(ds, offset0, offset, "\\x%02x", c);
+                }
             } else {
                 display_char_bidir(ds, offset0, offset, embedding_level, c);
             }
