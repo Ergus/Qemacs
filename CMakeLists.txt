@@ -23,6 +23,7 @@ option (ENABLE_GPROF "Add gprof build flags" OFF)
 option (ENABLE-ATARI "enable atari cross compile" OFF)
 option (ENABLE-WIN32 "enable win32 cross compile" OFF)
 option (ENABLE-CYGWIN "compile for cygwin systems" OFF)
+option (ENABLE-TESTS "compile tests and test support" ON)
 
 include (CMakeDependentOption)
 include (GNUInstallDirs)
@@ -55,12 +56,6 @@ cmake_dependent_option (ENABLE_FFMPEG
   "Enable ffmpeg support" ON "NOT ENABLE_TINY" OFF)
 
 # End command lines
-
-set (CHARSETMORE "${PROJECT_BINARY_DIR}/charsetmore.c")
-set (CHARSETJIS "${PROJECT_BINARY_DIR}/charsetjis.def")
-set_source_files_properties (${CHARSETMORE} ${CHARSETJIS}
-  PROPERTIES GENERATED true)
-
 set (CONFIG_HAS_TYPEOF true)
 set (CONFIG_PTSNAME true)
 
@@ -236,5 +231,7 @@ set (CPACK_RPM_PACKAGE_GROUP "Editors")
 
 include(CPack)
 
-enable_testing ()
-add_subdirectory (tests)
+if (ENABLE-TESTS)
+  enable_testing ()
+  add_subdirectory (tests)
+endif ()

@@ -117,11 +117,12 @@ target_link_libraries (qemacs ${LIBS})
 target_compile_definitions (qemacs PRIVATE ${QE_DEFINITION})
 install(TARGETS qemacs DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_library(lqemacs SHARED ${TINY_SOURCES})
-target_link_libraries (lqemacs ${LIBS})
-target_compile_definitions (lqemacs PRIVATE ${QE_DEFINITION} )
-install(TARGETS lqemacs DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
+if (ENABLE-TESTS)
+  add_library(lqemacs STATIC ${TINY_SOURCES})
+  target_link_libraries (lqemacs ${LIBS})
+  target_compile_definitions (lqemacs PRIVATE "CONFIG_TINY")
+  install(TARGETS lqemacs DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif ()
 
 # Extra files
 
