@@ -249,8 +249,7 @@ static int tty_dpy_init(QEditScreen *s,
             ts->term_flags &= ~(USE_BOLD_AS_BRIGHT_FG | USE_BLINK_AS_BRIGHT_BG |
                                 USE_256_COLORS | USE_TRUE_COLORS);
             ts->term_flags |= USE_256_COLORS;
-        } else
-        if (strstr(p, "16")) {
+        } else if (strstr(p, "16")) {
             ts->term_flags &= ~(USE_BOLD_AS_BRIGHT_FG | USE_BLINK_AS_BRIGHT_BG |
                                 USE_256_COLORS | USE_TRUE_COLORS);
         }
@@ -259,8 +258,7 @@ static int tty_dpy_init(QEditScreen *s,
     if (ts->term_flags & USE_TRUE_COLORS) {
         ts->term_fg_colors_count = 0x1000000;
         ts->term_bg_colors_count = 0x1000000;
-    } else
-    if (ts->term_flags & USE_256_COLORS) {
+    } else if (ts->term_flags & USE_256_COLORS) {
         ts->term_fg_colors_count = 256;
         ts->term_bg_colors_count = 256;
     }
@@ -643,12 +641,12 @@ static void tty_read_handler(void *opaque)
             ts->input_param = 0;
             ts->input_state = IS_CSI;
             break;
-	case 'M':
+        case 'M':
             ts->input_state = IS_MOUSE; /* When there is a mouse */
-	    ts->mouse.type = QE_KEY_EVENT; /* Initialize to zero */
-	    ts->mouse.x = -1;
-	    ts->mouse.y = -1;
-	    break;
+            ts->mouse.type = QE_KEY_EVENT; /* Initialize to zero */
+            ts->mouse.x = -1;
+            ts->mouse.y = -1;
+            break;
         case '[':
             ts->input_state = IS_CSI2;
             break;
@@ -737,52 +735,51 @@ static void tty_read_handler(void *opaque)
         break;
     case IS_MOUSE:
         if (ts->mouse.type == QE_KEY_EVENT) {  // Key
-	    const int but_or_release = ch & 3;
+            const int but_or_release = ch & 3;
 
-	    if (ch & 32) {
-		ts->mouse.type = QE_BUTTON_PRESS_EVENT;
-		if (ch & 64) {
-		    switch (but_or_release) {
-		    case 0:
-			ts->mouse.button = QE_WHEEL_UP;
-			break;
-		    case 1:
-			ts->mouse.button = QE_WHEEL_DOWN;
-			break;
-		    }
-		} else {
-		    switch (but_or_release) {
-		    case 0:
-			ts->mouse.button = QE_BUTTON_LEFT;
-			break;
-		    case 1:
-			ts->mouse.button = QE_BUTTON_MIDDLE;
-			break;
-		    case 2:
-			ts->mouse.button = QE_BUTTON_RIGHT;
-			break;
-		    case 3:
-			ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
-			break;
-
-		    }
-		}
-	    } else if (ch & 64) // If this is a movement, not a click
-		ts->mouse.type = QE_MOTION_EVENT;
+            if (ch & 32) {
+                ts->mouse.type = QE_BUTTON_PRESS_EVENT;
+                if (ch & 64) {
+                    switch (but_or_release) {
+                    case 0:
+                        ts->mouse.button = QE_WHEEL_UP;
+                        break;
+                    case 1:
+                        ts->mouse.button = QE_WHEEL_DOWN;
+                        break;
+                    }
+                } else {
+                    switch (but_or_release) {
+                    case 0:
+                        ts->mouse.button = QE_BUTTON_LEFT;
+                        break;
+                    case 1:
+                        ts->mouse.button = QE_BUTTON_MIDDLE;
+                        break;
+                    case 2:
+                        ts->mouse.button = QE_BUTTON_RIGHT;
+                        break;
+                    case 3:
+                        ts->mouse.type = QE_BUTTON_RELEASE_EVENT;
+                        break;
+                    }
+                }
+            } else if (ch & 64) // If this is a movement, not a click
+                ts->mouse.type = QE_MOTION_EVENT;
 
         } else { // Position
             const int pos = ch - 33;
-	    if (ts->mouse.x < 0) {
+            if (ts->mouse.x < 0) {
                 ts->mouse.x = pos;
-	    } else if (ts->mouse.y < 0) {
+            } else if (ts->mouse.y < 0) {
                 ts->mouse.y = pos;
 
-		ts->input_state = IS_NORM;
-		ev->button_event = ts->mouse;
-		qe_handle_event(ev);
-	    }
-	}
-	break;
+                ts->input_state = IS_NORM;
+                ev->button_event = ts->mouse;
+                qe_handle_event(ev);
+            }
+        }
+        break;
     the_end:
         ev->key_event.type = QE_KEY_EVENT;
         ev->key_event.key = ch;

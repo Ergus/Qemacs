@@ -1165,7 +1165,7 @@ QECharset *find_charset(const char *name)
 
     for (charset = first_charset; charset != NULL; charset = charset->next) {
         if (!strxcmp(charset->name, name)
-        ||  strxfind(charset->aliases, name)) {
+		    || strxfind(charset->aliases, name)) {
             return charset;
         }
     }
