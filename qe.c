@@ -9048,9 +9048,13 @@ void set_user_option(const char *user)
     }
 
     pstrcat(qs->res_path, sizeof(qs->res_path),
+            #ifdef CONFIG_QE_PLUGINS_DIR
+            CONFIG_QE_PLUGINS_DIR ":"
+            #endif // CONFIG_QE_PLUGINS_DIR
             CONFIG_QE_DATADIR ":"
             CONFIG_QE_DATADIR"/qe" ":"
-            CONFIG_QE_LIBDIR "/qe");
+            CONFIG_QE_LIBDIR "/qe"
+	);
 }
 
 void set_tty_charset(const char *name)

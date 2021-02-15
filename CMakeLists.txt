@@ -69,6 +69,10 @@ set (CONFIG_QE_DATADIR "${CMAKE_INSTALL_FULL_DATADIR}")
 set (CONFIG_QE_MANDIR "${CMAKE_INSTALL_FULL_MANDIR}")
 set (CONFIG_QE_LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  set (CONFIG_QE_PLUGINS_DIR "${PROJECT_BINARY_DIR}/plugins")
+endif ()
+
 include_directories (${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
 
 add_subdirectory (cp)
@@ -262,7 +266,7 @@ if (CONFIG_HTML)
 endif ()
 
 function (make_modules output)
-  set (targetname ${output})
+  set (targetname "${output}")
   set (filename "${${output}}")
   add_custom_command (
     OUTPUT "${filename}"
