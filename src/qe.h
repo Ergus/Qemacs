@@ -55,26 +55,33 @@
 #endif
 
 /* OS specific defines */
+#ifdef __GNUC__
+#define QE_GCC_VERSION (__GNUC__ * 10000 \
+                        + __GNUC_MINOR__ * 100  \
+                        + __GNUC_PATCHLEVEL__)
+#else
+#define QE_GCC_VERSION 0
+#endif
 
 #ifdef CONFIG_WIN32
 #define snprintf   _snprintf
 #define vsnprintf  _vsnprintf
 #endif
 
-#if (defined(__GNUC__) || defined(__TINYC__))
+#if (QE_GCC_VERSION > 0 || defined(__TINYC__))
 /* make sure that the keyword is not disabled by glibc (TINYC case) */
 #define qe__attr_printf(a, b)  __attribute__((format(printf, a, b)))
 #else
 #define qe__attr_printf(a, b)
 #endif
 
-#if defined(__GNUC__) && __GNUC__ > 2
+#if QE_GCC_VERSION > 20000
 #define qe__attr_nonnull(l)   __attribute__((nonnull l))
 #define qe__unused__          __attribute__((unused))
-#else
+#else // QE_GCC_VERSION
 #define qe__attr_nonnull(l)
 #define qe__unused__
-#endif
+#endif // QE_GCC_VERSION
 
 #ifndef offsetof
 #define offsetof(s,m)  ((size_t)(&((s *)0)->m))
@@ -1325,41 +1332,57 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 #ifdef QE_MODULE /* dynamic module case */
 
-#define qe_module_init(fn) \
-        int qe__module_init(void) { return fn(); }
+  #define qe_module_init(fn)                  \
+    int qe__module_init(void) { return fn(); }
 
-#define qe_module_exit(fn) \
-        void qe__module_exit(void) { fn(); }
+  #define qe_module_exit(fn) \
+    void qe__module_exit(void) { fn(); }
 
 #else /* QE_MODULE */
 
-#ifdef __GNUC__
-#if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
-/* same method as the linux kernel... */
-#define qe__init_call __attribute__((unused, __section__ (".initcall.init")))
-#define qe__exit_call __attribute__((unused, __section__ (".exitcall.exit")))
-#else
-#define qe__init_call __attribute__((used, section (".initcall.init")))
-#define qe__exit_call __attribute__((used, section (".exitcall.exit")))
-#endif
+   #if QE_GCC_VERSION == 0                // No gcc
 
-#define qe_module_init(fn) \
-        static int (*qe__initcall_##fn)(void) qe__init_call = fn
+      #ifdef __clang__                    // no gcc but clang
+         #define qe__init_call __attribute__((unused, section ("__DATA, .initcall.init")))
+         #define qe__exit_call __attribute__((unused, section ("__DATA, .exitcall.exit")))
+      #endif // __clang__
 
-#define qe_module_exit(fn) \
-        static void (*qe__exitcall_##fn)(void) qe__exit_call = fn
-#else //__GNUC__
+   #else // QE_GCC_VERSION == 0
 
-#define qe__init_call
-#define qe__exit_call
+      #if (QE_GCC_VERSION < 30300)        // old gcc
 
-#define qe_module_init(fn) \
-        extern int module_ ## fn (void); \
-        int module_ ## fn (void) { return fn(); }
+         #define qe__init_call __attribute__((unused, __section__ (".initcall.init")))
+         #define qe__exit_call __attribute__((unused, __section__ (".exitcall.exit")))
 
-#define qe_module_exit(fn)
+      #elif (QE_GCC_VERSION > 30300)      // "new" gcc
 
-#endif //__GNUC__
+         #define qe__init_call __attribute__((used, section (".initcall.init")))
+         #define qe__exit_call __attribute__((used, section (".exitcall.exit")))
+
+      #endif // QE_GCC_VERSION <> 30300
+
+   #endif // GCC_VERSION == 0
+
+   #ifdef qe__init_call
+
+      #define qe_module_init(fn) \
+         static int (*qe__initcall_##fn)(void) qe__init_call = fn
+
+      #define qe_module_exit(fn) \
+         static void (*qe__exitcall_##fn)(void) qe__exit_call = fn
+
+   #else // qe__init_call
+
+      // We need to define it at least to empty for TCC and other compatibility.
+      #define qe__init_call
+      #define qe__exit_call
+
+      #define qe_module_init(fn) \
+            extern int module_ ## fn (void); \
+            int module_ ## fn (void) { return fn(); }
+      #define qe_module_exit(fn)
+
+   #endif // qe__init_call
 
 #endif /* QE_MODULE */
 

@@ -590,7 +590,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 #ifndef STBI_NO_THREAD_LOCALS
    #if defined(__cplusplus) &&  __cplusplus >= 201103L
       #define STBI_THREAD_LOCAL       thread_local
-   #elif defined(__GNUC__) && __GNUC__ < 5
+   #elif QE_GCC_VERSION > 0 && QE_GCC_VERSION < 50000
       #define STBI_THREAD_LOCAL       __thread
    #elif defined(_MSC_VER)
       #define STBI_THREAD_LOCAL       __declspec(thread)
@@ -599,7 +599,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
    #endif
 
    #ifndef STBI_THREAD_LOCAL
-      #if defined(__GNUC__)
+      #if QE_GCC_VERSION > 0
         #define STBI_THREAD_LOCAL       __thread
       #endif
    #endif
@@ -637,9 +637,14 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
    #define stbi_lrot(x,y)  (((x) << (y)) | ((x) >> (32 - (y))))
 #endif
 
-#if defined(STBI_MALLOC) && defined(STBI_FREE) && (defined(STBI_REALLOC) || defined(STBI_REALLOC_SIZED))
+#if defined(STBI_MALLOC) && \
+    defined(STBI_FREE) && \
+    (defined(STBI_REALLOC) || defined(STBI_REALLOC_SIZED))
 // ok
-#elif !defined(STBI_MALLOC) && !defined(STBI_FREE) && !defined(STBI_REALLOC) && !defined(STBI_REALLOC_SIZED)
+#elif !defined(STBI_MALLOC) && \
+    !defined(STBI_FREE) && \
+    !defined(STBI_REALLOC) && \
+    !defined(STBI_REALLOC_SIZED)
 // ok
 #else
 #error "Must define all or none of STBI_MALLOC, STBI_FREE, and STBI_REALLOC (or STBI_REALLOC_SIZED)."
@@ -662,7 +667,10 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #define STBI__X86_TARGET
 #endif
 
-#if defined(__GNUC__) && defined(STBI__X86_TARGET) && !defined(__SSE2__) && !defined(STBI_NO_SIMD)
+#if QE_GCC_VERSION > 0 && \
+    defined(STBI__X86_TARGET) && \
+    !defined(__SSE2__) && \
+    !defined(STBI_NO_SIMD)
 // gcc doesn't support sse2 intrinsics unless you compile with -msse2,
 // which in turn means it gets to use SSE2 everywhere. This is unfortunate,
 // but previous attempts to provide the SSE2 functions with runtime
@@ -673,7 +681,10 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #define STBI_NO_SIMD
 #endif
 
-#if defined(__MINGW32__) && defined(STBI__X86_TARGET) && !defined(STBI_MINGW_ENABLE_SSE2) && !defined(STBI_NO_SIMD)
+#if defined(__MINGW32__) && \
+    defined(STBI__X86_TARGET) && \
+    !defined(STBI_MINGW_ENABLE_SSE2) && \
+    !defined(STBI_NO_SIMD)
 // Note that __MINGW32__ doesn't actually mean 32-bit, so we have to avoid STBI__X64_TARGET
 //
 // 32-bit MinGW wants ESP to be 16-byte aligned, but this is not in the

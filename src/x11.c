@@ -952,7 +952,7 @@ static void x11_dpy_draw_text(QEditScreen *s, QEFont *font,
     XFontStruct *xfont;
     QEFont *font1, *last_font =  font;
     XCharStruct *cs;
-#ifdef __GNUC__
+#if QE_GCC_VERSION > 0
     XChar2b x11_str[len];
 #else
     XChar2b x11_str[LINE_MAX_SIZE];

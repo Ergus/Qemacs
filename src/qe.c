@@ -9124,7 +9124,7 @@ static CmdLineOptionDef cmd_options[] = {
 
 #include "qeconfig.h"
 
-#ifdef __GNUC__
+#if QE_GCC_VERSION > 0
 
 static void init_all_modules(void)
 {
