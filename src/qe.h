@@ -1340,28 +1340,22 @@ void eb_delete_properties(EditBuffer *b, int offset, int offset2);
 
 #else /* QE_MODULE */
 
-   #if QE_GCC_VERSION == 0                // No gcc
+   #ifdef __clang__                          // Exists clang
 
-      #ifdef __clang__                    // no gcc but clang
-         #define qe__init_call __attribute__((unused, section ("__DATA, .initcall.init")))
-         #define qe__exit_call __attribute__((unused, section ("__DATA, .exitcall.exit")))
-      #endif // __clang__
+      #define qe__init_call __attribute__((used, section ("__DATA, .initcall.init")))
+      #define qe__exit_call __attribute__((used, section ("__DATA, .exitcall.exit")))
 
-   #else // QE_GCC_VERSION == 0
+   #elif (QE_GCC_VERSION < 30300)
 
-      #if (QE_GCC_VERSION < 30300)        // old gcc
+      #define qe__init_call __attribute__((unused, __section__ (".initcall.init")))
+      #define qe__exit_call __attribute__((unused, __section__ (".exitcall.exit")))
 
-         #define qe__init_call __attribute__((unused, __section__ (".initcall.init")))
-         #define qe__exit_call __attribute__((unused, __section__ (".exitcall.exit")))
+   #elif (QE_GCC_VERSION > 30300)
 
-      #elif (QE_GCC_VERSION > 30300)      // "new" gcc
+      #define qe__init_call __attribute__((used, section (".initcall.init")))
+      #define qe__exit_call __attribute__((used, section (".exitcall.exit")))
 
-         #define qe__init_call __attribute__((used, section (".initcall.init")))
-         #define qe__exit_call __attribute__((used, section (".exitcall.exit")))
-
-      #endif // QE_GCC_VERSION <> 30300
-
-   #endif // GCC_VERSION == 0
+   #endif // __clang__
 
    #ifdef qe__init_call
 
