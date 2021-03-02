@@ -45,7 +45,7 @@ typedef struct HistoryEntry {
 #ifdef CONFIG_INIT_CALLS
 static int (*qe__initcall_first)(void) qe__init_call = NULL;
 static void (*qe__exitcall_first)(void) qe__exit_call = NULL;
-#endif
+#endif // CONFIG_INIT_CALLS
 
 void print_at_byte(QEditScreen *screen,
                    int x, int y, int width, int height,
@@ -61,7 +61,7 @@ static void generic_text_display(EditState *s);
 static void display1(DisplayState *ds);
 #ifndef CONFIG_TINY
 static void save_selection(void);
-#endif
+#endif // CONFIG_TINY
 
 QEmacsState qe_state;
 /* should handle multiple screens, and multiple sessions */
@@ -77,7 +77,7 @@ int use_html = 1;
 #ifndef CONFIG_TINY
 static void save_selection(void);
 static int free_everything;
-#endif
+#endif // CONFIG_TINY
 
 /* mode handling */
 
@@ -86,7 +86,7 @@ static int default_mode_init(EditState *s, EditBuffer *b, int flags) { return 0;
 static int generic_mode_probe(ModeDef *mode, ModeProbeData *p)
 {
     if (match_extension(p->filename, mode->extensions)
-    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
+	    ||  match_shell_handler(cs8(p->buf), mode->shell_handlers)) {
         return 80;
     }
     return 1;
@@ -9124,7 +9124,7 @@ static CmdLineOptionDef cmd_options[] = {
 
 #include "qeconfig.h"
 
-#if QE_GCC_VERSION > 0
+#if QE_GCC_VERSION > 0 // ==========================
 
 static void init_all_modules(void)
 {
@@ -9133,11 +9133,11 @@ static void init_all_modules(void)
 
     ptr = (int (**)(void))(void *)&qe__initcall_first;
     while (1) {
-#if defined(__BOUNDS_CHECKING_ON)
+#ifdef __BOUNDS_CHECKING_ON
         /* NOTE: if bound checking is on, a NULL is inserted between
            each initialized 'void *' */
         ptr++;
-#endif
+#endif // __BOUNDS_CHECKING_ON
         ptr++;
         initcall = *ptr;
         if (initcall == NULL)
@@ -9155,11 +9155,11 @@ static void exit_all_modules(void)
 
     ptr = (int (**)(void))(void *)&qe__exitcall_first;
     while (1) {
-#if defined(__BOUNDS_CHECKING_ON)
+#ifdef __BOUNDS_CHECKING_ON
         /* NOTE: if bound checking is on, a NULL is inserted between
            each initialized 'void *' */
         ptr++;
-#endif
+#endif // __BOUNDS_CHECKING_ON
         ptr++;
         exitcall = *ptr;
         if (exitcall == NULL)
@@ -9167,9 +9167,9 @@ static void exit_all_modules(void)
         (*exitcall)();
     }
 }
-#endif
+#endif // 0
 
-#else //===============================================
+#else // QE_GCC_VERSION > 0 // ==========================
 
 #ifndef SPLINT
 #define qe_module_declare(fn)  extern int module_ ## fn(void)
@@ -9185,7 +9185,7 @@ static void init_all_modules(void)
 #undef qe_module_declare
 #endif
 }
-#endif
+#endif // QE_GCC_VERSION > 0 // ==========================
 
 #ifdef CONFIG_DLL
 

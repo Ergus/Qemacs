@@ -132,7 +132,6 @@ else ()
 
   if (APPLE)
     set (CONFIG_DARWIN true)
-    set (CONFIG_INIT_CALLS false)
   elseif (CMAKE_SYSTEM_NAME STREQUAL Haiku)
     set (CONFIG_HAIKU true)
     set (CONFIG_HTML ${ENABLE_HTML})
