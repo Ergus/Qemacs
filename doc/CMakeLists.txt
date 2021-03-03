@@ -23,7 +23,8 @@ if (MAKEINFO)
   function (buildtexi input output)
     set(SOURCE_DOC "${CMAKE_CURRENT_SOURCE_DIR}/${input}")
 
-    add_custom_command(OUTPUT ${output}
+    add_custom_command(
+      OUTPUT ${output}
       COMMAND ${MAKEINFO} --html --no-split ${SOURCE_DOC}
       MAIN_DEPENDENCY ${SOURCE_DOC})
 
