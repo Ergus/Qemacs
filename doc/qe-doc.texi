@@ -301,7 +301,7 @@ Set a global key binding to a command.
 @item set_system_font(family, system_fonts)
 
 (X11) Maps a system font to a QEmacs font family. Multiple fonts can be
-given as fallback (@xref{fonts}.).
+given as fallback (@xref{Fonts}.).
 
 @item set_style(stylename, css_property, css_value)
 Set a colorization style (see @file{qestyle.h} and @file{config.eg} for
@@ -795,7 +795,7 @@ Pause/Resume
 (@samp{M-x av-cycle-audio}) Cycle through available audio channels.
 @end table
 
-@node fonts
+@node Fonts
 @chapter Fonts
 
 @section VT100 display
