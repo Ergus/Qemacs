@@ -1,0 +1,20 @@
+name: Build qemacs
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        configs: [Release, Debug]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        config: ${{ matrix.configs }}
+        run_tests: ON
+        create_package: ON
